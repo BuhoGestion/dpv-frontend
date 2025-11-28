@@ -1,0 +1,270 @@
+/* COMPONENTE UserABM.css (Estilos Esenciales) */
+
+/* Contenedor principal */
+.user-management-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #f4f7f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: #333;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Botón Nuevo Usuario */
+.btn-nueva-obra {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+}
+
+.btn-nueva-obra:hover {
+    background-color: #0056b3;
+}
+
+/* Tabla */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.user-table th, .user-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.user-table th {
+    background-color: #e9ecef;
+    color: #333;
+    font-weight: 600;
+}
+
+.user-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Columna de Acciones */
+.actions-cell {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.actions-cell .icon {
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.actions-cell .icon:hover {
+    transform: scale(1.1);
+}
+
+.actions-cell .edit { color: #ffc107; }
+.actions-cell .permissions { color: #17a2b8; } /* Nuevo color para Permisos */
+.actions-cell .delete { color: #dc3545; }
+
+/* Mensajes */
+.loading-message, .error-message {
+    padding: 20px;
+    text-align: center;
+    border-radius: 4px;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.loading-message { background-color: #e0f7fa; color: #00bcd4; }
+.error-message { background-color: #fdeaea; color: #dc3545; }
+
+
+/* --- ESTILOS DE LOS MODALES (UserModal & PermisosModal) --- */
+
+.user-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.user-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px; /* Tamaño por defecto para UserModal */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.user-modal-content h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Formulario */
+.user-modal-content label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.user-modal-content input[type="text"],
+.user-modal-content input[type="email"],
+.user-modal-content input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-buttons {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #218838;
+}
+
+/* --- ESTILOS ESPECÍFICOS PARA EL MODAL DE PERMISOS --- */
+
+.permissions-modal-content {
+    max-width: 800px; /* Más ancho para el doble listado */
+    padding: 20px;
+}
+
+.permissions-transfer-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.permissions-list {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #fff;
+    max-height: 400px; 
+    display: flex;
+    flex-direction: column;
+}
+
+.permissions-list h4 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #007bff;
+}
+
+.permissions-list.assigned h4 {
+    color: #28a745;
+}
+
+.list-items {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-right: 5px; /* Espacio para la barra de scroll */
+}
+
+.list-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.permissions-list.available .list-item:hover {
+    background-color: #e9f5ff;
+    border-color: #007bff;
+    transform: translateX(5px);
+}
+
+.permissions-list.assigned .list-item {
+    background-color: #e5f7ea;
+}
+
+.permissions-list.assigned .list-item:hover {
+    background-color: #f7e0e5;
+    border-color: #dc3545;
+    transform: translateX(-5px);
+}
+
+.separator-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    min-width: 30px;
+}
+
+.separator-icon {
+    color: #6c757d;
+}
+
+.save-button-container {
+    text-align: center;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+}

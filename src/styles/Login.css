@@ -1,0 +1,165 @@
+/* Fondo */
+.login-page {
+  height: 100vh;
+  width: 100vw;
+  background: url("/loginDPV.jpg") no-repeat center center/cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: Arial, sans-serif;
+}
+
+/* Panel translúcido a la derecha */
+.login-panel {
+  position: absolute;
+  margin: 20px 30px ;
+  border-radius: 8px;
+  right: 0;
+  height: 73%;
+  width: 420px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Header dentro del panel */
+.login-header {
+  background: #0284c7;
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+  padding: 10px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+.login-header span {
+  color: #7dd3fc;
+}
+.login-header .subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 4px 0;
+}
+.login-header .small-text {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* Inputs */
+.input-group {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+}
+.input-group .icon {
+  margin-right: 8px;
+  color: #666;
+}
+.input-group input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 15px;
+}
+
+/* Botón */
+.btn-login {
+  width: 100%;
+  background: #0284c7;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.btn-login:hover {
+  background: #0369a1;
+}
+/* Link */
+.forgot {
+  text-align: center;
+  margin-top: 10px;
+}
+.forgot a {
+  font-size: 14px;
+  color: #ffffff;
+  text-decoration: none;
+}
+.forgot a:hover {
+  text-decoration: underline;
+}
+
+/* Footer con franjas y logos */
+.login-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.barra-multicolor {
+  display: flex;
+  width: 100%;
+  height: 8px; /* grosor de la línea */
+}
+
+.franja {
+  height: 100%;
+}
+
+.azul-oscuro {
+  flex: 0.3; /* ocupa 2 partes */
+  background: #001b7a;
+}
+
+.celeste {
+  flex: 0.75; /* ocupa 1 parte */
+  background: #1d9bf0;
+}
+
+.arena {
+  flex: 2; /* ocupa 2 partes */
+  background: #d6a86c;
+}
+.login-footer{
+    max-height: 90px;
+}
+.footer-content {
+  background: white;
+  padding: 8px 20px;
+  display: flex;
+  justify-content: space-between; /* separa izquierda y derecha */
+  align-items: center;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center; /* centra verticalmente */
+  gap: 15px; /* espacio entre el texto y el logo Mendoza */
+}
+
+.footer-content .logo {
+  height: 60px;
+}
+
+.footer-content p {
+  font-size: 14px;
+  color: #0284c7;
+  margin: 0; /* para que no desborde */
+}

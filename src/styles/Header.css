@@ -1,0 +1,80 @@
+.header-content {
+  font-family: Arial, sans-serif;
+  background: white;
+  padding: 8px 20px;
+  display: flex;
+  justify-content: space-between; /* Izquierda - NavBar - Derecha */
+  align-items: center;
+  gap: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-content .logo {
+  height: 60px;
+}
+
+.header-content p {
+  font-size: 14px;
+  color: #0284c7;
+  margin: 0;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio entre la información del usuario y otros elementos */
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: default; /* Indicar que es un bloque de información */
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.user-name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 16px;
+    color: #333; /* Color principal para el nombre */
+}
+
+.user-icon {
+    color: #5d0263; /* Color morado para el ícono de usuario */
+}
+
+.subsecretaria-text {
+    font-size: 11px;
+    color: #008080; /* Teal/Verde azulado para el subtítulo */
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Estilo del botón de cerrar sesión */
+.btn-logout {
+    background: none;
+    border: none;
+    color: #990000; /* Rojo oscuro para el botón de logout */
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-logout:hover {
+    background: #f0f0f0;
+}

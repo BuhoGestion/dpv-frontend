@@ -1,0 +1,234 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* Asegúrate de que este valor sea *menor* que el de SweetAlert (10000) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content-avances {
+  background-color: #fff;
+  border-radius: 10px;
+  width: auto;
+  max-height: 90vh;
+  padding: 25px;
+  overflow-y: auto;
+  font-family: Arial, sans-serif;
+
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 15px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-header button {
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modal-body-avances h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #1e3a8a;
+}
+
+/* Tabla de avances */
+.tabla-avances {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.tabla-avances th,
+.tabla-avances td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.tabla-avances th {
+  background-color: #f3f4f6;
+  text-align: left;
+}
+
+/* Formulario */
+.form-avance {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-avance label {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.form-avance input,
+.form-avance textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.botones-avance {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-agregar {
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-guardar {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-agregar:hover {
+  background-color: #16a34a;
+}
+
+.btn-guardar:hover {
+  background-color: #1d4ed8;
+}
+
+.form-avance {
+  display: flex;
+  flex-direction: column; 
+  gap: 16px; 
+}
+
+.form-avance div {
+  width: 100%;
+}
+
+.form-avance input,
+.form-avance select,
+.form-avance textarea {
+  width: 100%;
+  box-sizing: border-box; 
+}
+/* En: styles/ModalAvances.css */
+
+/* ... (mantén el código que ya tenías) ... */
+.form-avance input,
+.form-avance select {
+  padding: 10px;                 /* Padding interno uniforme */
+  font-size: 0.9rem;             /* Tamaño de letra uniforme */
+  border: 1px solid #ccc;        /* Borde uniforme */
+  border-radius: 4px;            /* Bordes redondeados uniformes */
+  height: 40px;                  /* Altura fija uniforme */
+  background-color: #fff;      /* Fondo blanco */
+  box-sizing: border-box;        /* Asegura que el padding no rompa el ancho */
+}
+
+/* 5. Ajuste específico para el <select> (para que se vea más como un input) */
+.form-avance select {
+  /* Esto quita la flecha nativa del navegador */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* Fondo para añadir una flecha personalizada (simple) */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 10px;
+  padding-right: 30px; /* Espacio para que el texto no se ponga sobre la flecha */
+}
+
+/* 6. Arregla el placeholder de 'Ej: 35' */
+.form-avance input::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+.form-avance .select-multiple-container .equipment-list {
+  height: 150px;           /* Altura fija */
+  overflow-y: auto;        /* Habilita el scroll vertical si es necesario */
+  border: 1px solid #ccc;  /* Borde visible */
+  border-radius: 4px;      /* Bordes redondeados */
+  padding: 8px;            /* Espacio interno */
+  background-color: #fff;  /* Fondo blanco */
+}
+
+/* Estilo para cada item individual dentro de la lista */
+.form-avance .equipment-item {
+  display: flex;             /* Alinea checkbox, texto y estado horizontalmente */
+  align-items: center;       /* Centra verticalmente los elementos */
+  padding: 4px 8px;          /* Reduce el padding vertical y horizontal */
+  margin-bottom: 4px;        /* Espacio pequeño entre items */
+  border: 1px solid #eee;    /* Borde sutil */
+  border-radius: 3px;        /* Bordes redondeados pequeños */
+  font-size: 0.85rem;        /* Reduce un poco el tamaño de la letra */
+  cursor: pointer;
+  user-select: none;         /* Evita seleccionar el texto al hacer clic */
+  transition: background-color 0.2s ease; /* Transición suave al seleccionar */
+}
+
+/* Ajusta el checkbox dentro del item */
+.form-avance .equipment-item input[type="checkbox"] {
+  width: auto;               /* Ancho automático para el checkbox */
+  height: auto;              /* Altura automática */
+  margin-right: 8px;         /* Espacio a la derecha del checkbox */
+}
+
+/* Ajusta el span del estado (disponible/no disponible) */
+.form-avance .equipment-item span:last-child {
+  margin-left: auto;         /* Empuja el estado a la derecha */
+  font-weight: bold;
+  font-size: 0.8rem;         /* Letra un poco más pequeña para el estado */
+}
+
+/* Estilo cuando un item está seleccionado */
+.form-avance .equipment-item.selected {
+  background-color: #e0f7fa; /* Fondo celeste claro */
+  border-color: #00bcd4;     /* Borde cian */
+}
+
+/* Estilo para items deshabilitados (equipos no disponibles) */
+.form-avance .equipment-item.disabled {
+  background-color: #f0f0f0; /* Fondo gris claro */
+  opacity: 0.6;              /* Más transparente */
+  cursor: not-allowed;       /* Cursor de no permitido */
+  border-color: #ddd;
+}
+
+.swal2-container {
+    z-index: 10000 !important; /* El valor 10000 es casi siempre suficiente */
+}

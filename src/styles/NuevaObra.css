@@ -1,0 +1,163 @@
+/* === CONTENEDOR PRINCIPAL DEL FORM === */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* Asegúrate de que este valor sea *menor* que el de SweetAlert (10000) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+  background: #ffffff;
+  padding: 24px 28px;
+  border-radius: 10px;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+  max-width: 850px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  font-family: Arial, sans-serif;
+}
+
+/* === TITULOS DE SECCIÓN === */
+.modal-content h3 {
+  color: #374151;
+  font-size: 17px;
+  margin-top: 25px;
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #e5e7eb;
+  font-weight: 700;
+}
+
+/* === CAMPOS DE FORMULARIO === */
+.modal-content form > div {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.modal-content label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #374151;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+/* === GRID DE FORMULARIO (DOS COLUMNAS) === */
+.modal-content form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+
+.modal-content form h3 {
+  grid-column: span 2;
+}
+
+/* === TEXTAREA A LO ANCHO === */
+.modal-content textarea {
+  resize: vertical;
+  min-height: 80px;
+  grid-column: span 2;
+}
+
+/* === BOTONES === */
+.form-buttons {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.form-buttons button {
+  padding: 8px 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.form-buttons button[type="button"] {
+  background: #9ca3af;
+  color: white;
+}
+
+.form-buttons button[type="button"]:hover {
+  background: #6b7280;
+}
+
+.form-buttons button[type="submit"] {
+  background: #2563eb;
+  color: white;
+}
+
+.form-buttons button[type="submit"]:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* === SCROLLBAR SUAVE === */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  border-radius: 4px;
+}
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+.swal2-container {
+    z-index: 10000 !important; /* El valor 10000 es casi siempre suficiente */
+}
+/* === ANIMACIONES === */
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .modal-content form {
+    grid-template-columns: 1fr;
+  }
+  .form-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
