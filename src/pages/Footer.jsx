@@ -7,8 +7,7 @@ export default function Footer() {
       <strong>
         Copyright &copy; 2025{" "}
         <p>
-          Subsecretaria de Infraestructura y Desarrollo Territorial - Ministerio
-          de Gobierno, Infraestructura y Desarrollo Territorial.
+          Departamento Provincial de Vialidad - Gobierno de Mendoza, Argentina.
         </p>
       </strong>{" "}
     </footer>

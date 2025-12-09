@@ -8,7 +8,7 @@ import Footer from "./Footer";
 import "../styles/UserABM.css";
 import PermisosModal from "./PermisosModal";
 
-const API_BASE_URL = "https://localhost:44311/api";
+const API_BASE_URL = "https://buhovialws.mendoza.gov.ar/api";
 
 //MODAL DE USUARIO ADAPTADO PARA CAMPOS SEPARADOS Y CLAVE GENERADA
 const UserModal = ({ userToEdit, onClose, onSave }) => {
@@ -241,6 +241,7 @@ function UserABM({ userName, onLogout }) {
         );
       }
       setUsers(await response.json());
+      console.log("✅ Lista de usuarios actualizada en el estado."); // <-- Añadir esto
       setError(null);
     } catch (err) {
       console.error(err);
@@ -273,13 +274,12 @@ function UserABM({ userName, onLogout }) {
   };
 
   // --- Alta y Edición (Lógica de comunicación con el Back-End) ---
- const handleSaveUser = async (formData) => {
-        const isEdit = formData.idUsuario > 0; 
-        const method = isEdit ? 'PUT' : 'POST';
-        
-        const url = isEdit 
-            ? `${API_BASE_URL}/Usuario/${formData.idUsuario}` 
-            : `${API_BASE_URL}/Usuario/create`;
+  const handleSaveUser = async (formData) => {
+    const isEdit = formData.idUsuario > 0;
+    const method = isEdit ? "PUT" : "POST";
+    const url = isEdit
+      ? `${API_BASE_URL}/Usuario/${formData.idUsuario}`
+      : `${API_BASE_URL}/Usuario/create`;
 
     try {
       const response = await fetch(url, {
@@ -288,10 +288,14 @@ function UserABM({ userName, onLogout }) {
         // Enviamos el formData (que tiene Nombre, Email, y opcionalmente Password)
         body: JSON.stringify(formData),
       });
-
-      const data = await response.json();
+      let data = {};
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+      }
 
       if (!response.ok) {
+        // Se usa 'data' solo si se pudo parsear el JSON
         const errorMsg =
           data.message || `Error ${response.status}: Fallo al guardar.`;
         Swal.fire("Error", errorMsg, "error");
@@ -303,11 +307,16 @@ function UserABM({ userName, onLogout }) {
         ? `Usuario ${formData.nombre} actualizado correctamente.`
         : `Usuario ${formData.nombre} creado. Las credenciales han sido enviadas a ${formData.email}.`;
 
-      Swal.fire("Éxito", successMsg, "success");
+      Swal.fire("Éxito", successMsg, "success"); // <-- ESTE ES EL SWEET ALERT
       handleCloseModals();
       fetchUsers();
     } catch (err) {
-      Swal.fire("Error", "Fallo de conexión al intentar guardar.", "error");
+      // Esto captura fallos de conexión O fallos al parsear JSON si no se hizo la verificación anterior.
+      Swal.fire(
+        "Error",
+        "Fallo de conexión o error de formato de respuesta al intentar guardar.",
+        "error"
+      );
     }
   };
 

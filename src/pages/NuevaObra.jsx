@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Swal from "sweetalert2";
 import "../styles/NuevaObra.css";
+import { usePermissions } from "../utils/authUtils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const getToken = () => localStorage.getItem("authToken");
 export default function NuevaObra({ obra, onClose, onSave }) {
+  const { isFullAdmin } = usePermissions();
   // ESTADOS
   const [zonas, setZonas] = useState([]);
   const [seccionalesMaestras, setSeccionalesMaestras] = useState([]);
@@ -57,17 +59,17 @@ export default function NuevaObra({ obra, onClose, onSave }) {
     const fetchCatalogos = async () => {
       setLoadingCatalogos(true);
       const token = getToken();
-      const authHeaders = { 'Authorization': `Bearer ${token}` };
+      const authHeaders = { Authorization: `Bearer ${token}` };
       try {
         const [zonasRes, seccionalesRes, tiposObraRes, departamentosRes] =
-                    await Promise.all([
-                        //Usamos el endpoint filtrado con AUTH
-                        fetch(`${API_BASE_URL}/Zona/filtradas`, { headers: authHeaders }),
-                        // AUTH en los demás catálogos si están protegidos
-                        fetch(`${API_BASE_URL}/Seccional`, { headers: authHeaders }),
-                        fetch(`${API_BASE_URL}/TipoObraProyecto`, { headers: authHeaders }),
-                        fetch(`${API_BASE_URL}/Departamento`, { headers: authHeaders }),
-                    ]);
+          await Promise.all([
+            //Usamos el endpoint filtrado con AUTH
+            fetch(`${API_BASE_URL}/Zona/filtradas`, { headers: authHeaders }),
+            // AUTH en los demás catálogos si están protegidos
+            fetch(`${API_BASE_URL}/Seccional`, { headers: authHeaders }),
+            fetch(`${API_BASE_URL}/TipoObraProyecto`, { headers: authHeaders }),
+            fetch(`${API_BASE_URL}/Departamento`, { headers: authHeaders }),
+          ]);
 
         if (!zonasRes.ok) throw new Error("Fallo al cargar Zonas");
         if (!seccionalesRes.ok) throw new Error("Fallo al cargar Seccionales");
@@ -75,24 +77,28 @@ export default function NuevaObra({ obra, onClose, onSave }) {
         if (!departamentosRes.ok)
           throw new Error("Fallo al cargar Departamentos");
 
-      const zonasData = await zonasRes.json();   
-      setZonas(zonasData);
-      setSeccionalesMaestras(await seccionalesRes.json());
-      setTiposObra(await tiposObraRes.json());
-      setDepartamentos(await departamentosRes.json());
-      // ✅ CAMBIO 2: Si el usuario restringido solo ve una zona, forzar la selección.
-      if (zonasData.length === 1 && form.zona === 0) {
-          setForm(prev => ({ ...prev, zona: zonasData[0].idZona }));
-      }
+        const zonasData = await zonasRes.json();
+        setZonas(zonasData);
+        setSeccionalesMaestras(await seccionalesRes.json());
+        setTiposObra(await tiposObraRes.json());
+        setDepartamentos(await departamentosRes.json());
+        // ✅ CAMBIO 2: Si el usuario restringido solo ve una zona, forzar la selección.
+        if (zonasData.length === 1 && form.zona === 0) {
+          setForm((prev) => ({ ...prev, zona: zonasData[0].idZona }));
+        }
       } catch (err) {
-          console.error("Error cargando catálogos:", err);
-          Swal.fire("Error", `No se pudo cargar: ${err.message}. Asegúrese que el token JWT es válido.`, "error");
+        console.error("Error cargando catálogos:", err);
+        Swal.fire(
+          "Error",
+          `No se pudo cargar: ${err.message}. Asegúrese que el token JWT es válido.`,
+          "error"
+        );
       } finally {
-          setLoadingCatalogos(false);
+        setLoadingCatalogos(false);
       }
     };
     fetchCatalogos();
-    }, [isEditing]);
+  }, [isEditing]);
 
   // LÓGICA DE CASCADA: Filtrar Seccionales
   const seccionalesFiltradas = useMemo(() => {
@@ -221,7 +227,8 @@ export default function NuevaObra({ obra, onClose, onSave }) {
       </div>
     );
   }
-  const isZonaSelectDisabled = isEditing || zonas.length === 1; 
+  const isZonaSelectDisabled = isEditing || zonas.length === 1;
+  const isMontoDisabled = !isFullAdmin;
   return (
     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
       <div className="modal-header">
@@ -279,18 +286,18 @@ export default function NuevaObra({ obra, onClose, onSave }) {
             //Deshabilitado si es edición o si solo hay 1 zona
             disabled={isZonaSelectDisabled}
           >
-            {zonas.length !== 1 && <option value={0}>Seleccione...</option>} 
+            {zonas.length !== 1 && <option value={0}>Seleccione...</option>}
             {zonas.map((zona) => (
               <option key={zona.idZona} value={zona.idZona}>
-                  {zona.nombreZona}
+                {zona.nombreZona}
               </option>
             ))}
-            </select>
-              {zonas.length === 1 && (
-                <p style={{ color: 'gray', fontSize: '0.8rem', marginTop: '5px' }}>
-                  Restringido a su zona de pertenencia.
-                </p>
-            )}
+          </select>
+          {zonas.length === 1 && (
+            <p style={{ color: "gray", fontSize: "0.8rem", marginTop: "5px" }}>
+              Restringido a su zona de pertenencia.
+            </p>
+          )}
         </div>
 
         {/* Seccional (Filtrado) */}
@@ -334,7 +341,7 @@ export default function NuevaObra({ obra, onClose, onSave }) {
         </div>
         {/* Longitud */}
         <div>
-          <label>Longitud (metros)</label>
+          <label>Longitud (km)</label>
           <input
             type="number"
             name="longitud"
@@ -388,7 +395,13 @@ export default function NuevaObra({ obra, onClose, onSave }) {
             name="montoContrato"
             value={form.montoContrato}
             onChange={handleChange}
+            disabled={isMontoDisabled}
           />
+          {isMontoDisabled && (
+            <p style={{ color: "red", fontSize: "0.8rem", marginTop: "5px" }}>
+              Solo administradores tienen permiso para modificar el monto.
+            </p>
+          )}
         </div>
 
         {/* Sección Asignación */}

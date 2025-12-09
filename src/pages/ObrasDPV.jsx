@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-    BarChart2,
-    Pencil,
-    Trash2,
-    ArrowRightCircle,
-    AlertOctagon,
+  BarChart2,
+  Pencil,
+  Trash2,
+  ArrowRightCircle,
+  AlertOctagon,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import "../styles/Obras.css";
@@ -16,34 +16,34 @@ import { usePermissions } from "../utils/authUtils";
 // URL base de tu API (usando variables de entorno, buena práctica)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const ESTADOS_OBRA = {
-    Ejecución: 1,
-    Finalizada: 2,
+  Ejecución: 1,
+  Finalizada: 2,
 };
 
 //FUNCIÓN AUXILIAR PARA OBTENER TOKEN
 const getToken = () => localStorage.getItem("authToken");
 export default function Obras({ userName, onLogout }) {
-    const { hasPermission, isFullAdmin } = usePermissions();
-    const canEdit = isFullAdmin || hasPermission("OBRAS_EDITAR"); // Permite Crear, Editar, Eliminar, Cambiar Estado
-    const canView = canEdit || hasPermission("OBRAS_VER"); // Permite ver la grilla
-    const [obras, setObras] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    // ESTADOS PARA DATOS MAESTROS DE FILTROS
-    const [zonasMaestras, setZonasMaestras] = useState([]);
-    const [tiposObraMaestros, setTiposObraMaestros] = useState([]);
-    const [seccionalesMaestras, setSeccionalesMaestras] = useState([]);
-    const [departamentosMaestros, setDepartamentosMaestros] = useState([]);
-    const [estadoFiltro, setEstadoFiltro] = useState(null);
-    const [filtros, setFiltros] = useState({
-        nombre: "",
-        tipo: 0,
-        zona: 0,
-        seccional: 0,
-    });
-    const [mostrarNuevaObra, setMostrarNuevaObra] = useState(false);
-    const [mostrarAvances, setMostrarAvances] = useState(false);
-    const [obraSeleccionada, setObraSeleccionada] = useState(null);
+  const { hasPermission, isFullAdmin } = usePermissions();
+  const canEdit = isFullAdmin || hasPermission("OBRAS_EDITAR"); // Permite Crear, Editar, Eliminar, Cambiar Estado
+  const canView = canEdit || hasPermission("OBRAS_VER"); // Permite ver la grilla
+  const [obras, setObras] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  // ESTADOS PARA DATOS MAESTROS DE FILTROS
+  const [zonasMaestras, setZonasMaestras] = useState([]);
+  const [tiposObraMaestros, setTiposObraMaestros] = useState([]);
+  const [seccionalesMaestras, setSeccionalesMaestras] = useState([]);
+  const [departamentosMaestros, setDepartamentosMaestros] = useState([]);
+  const [estadoFiltro, setEstadoFiltro] = useState(null);
+  const [filtros, setFiltros] = useState({
+    nombre: "",
+    tipo: 0,
+    zona: 0,
+    seccional: 0,
+  });
+  const [mostrarNuevaObra, setMostrarNuevaObra] = useState(false);
+  const [mostrarAvances, setMostrarAvances] = useState(false);
+  const [obraSeleccionada, setObraSeleccionada] = useState(null);
   // --- FUNCIONES DE AYUDA (Mantenidas) ---
   const getNombre = (id, lista, idKey, nombreKey) => {
     const item = lista.find((item) => item[idKey] === id);
@@ -69,67 +69,96 @@ export default function Obras({ userName, onLogout }) {
     const promedio = sumaAvances / tareas.length;
     return Math.round(promedio);
   };
+
+  // FUNCIÓN AUXILIAR PARA OBTENER TODOS LOS EQUIPOS ÚNICOS DE UNA OBRA
+  const getEquiposUnicos = (tareas) => {
+    if (!tareas || tareas.length === 0) {
+      return [];
+    }
+
+    // 1. Obtener todos los equipos de todas las tareas (aplanar)
+    const todosLosEquipos = tareas.flatMap((tarea) => tarea.equipos || []);
+
+    // 2. Crear un Map para almacenar equipos únicos por su ID
+    const equiposUnicosMap = new Map();
+
+    todosLosEquipos.forEach((equipo) => {
+      // Asumiendo que el DTO de Equipo tiene idEquipo y nombre (o codigo)
+      if (equipo && equipo.idEquipo) {
+        equiposUnicosMap.set(equipo.idEquipo, equipo);
+      }
+    });
+
+    // 3. Devolver la lista de valores únicos
+    return Array.from(equiposUnicosMap.values());
+  };
+
   //FUNCIÓN PRINCIPAL DE CARGA (CORREGIDA)
-    const fetchObras = async () => {
-        setLoading(true);
-        const token = getToken();
-        
-        // 1. CHEQUEO DE AUTENTICACIÓN
-        if (!token) {
-            setError("Error de autenticación. Por favor, inicie sesión nuevamente.");
-            setLoading(false);
-            return;
-        }
-        const authHeader = { 'Authorization': `Bearer ${token}` };
-        try {
-            const [obrasRes, zonasRes, tiposRes, seccionalesRes, deptoRes] =
-                await Promise.all([
-                    //CORRECCIÓN 1: Única llamada a ObraProyecto con AUTH
-                    fetch(`${API_BASE_URL}/ObraProyecto`, { headers: authHeader }),                    
-                    fetch(`${API_BASE_URL}/Zona`, { headers: authHeader }),
-                    fetch(`${API_BASE_URL}/TipoObraProyecto`, { headers: authHeader }),
-                    fetch(`${API_BASE_URL}/Seccional`, { headers: authHeader }),
-                    fetch(`${API_BASE_URL}/Departamento`, { headers: authHeader }),
-                ]);
+  const fetchObras = async () => {
+    setLoading(true);
+    const token = getToken();
 
-            if (obrasRes.ok) {
-                setObras(await obrasRes.json());
-            } else {
-                // CORRECCIÓN 1: Manejo de errores 401/403
-                if (obrasRes.status === 401 || obrasRes.status === 403) {
-                     const errorBody = await obrasRes.json().catch(() => ({ message: "Acceso denegado o sesión expirada." }));
-                     throw new Error(errorBody.message || `Acceso denegado. Código: ${obrasRes.status}.`);
-                }
-                throw new Error("Fallo al obtener la lista de obras.");
-            }
-            
-            // Cargar Catálogos para filtros y mapeo de grilla
-            if (zonasRes.ok) setZonasMaestras(await zonasRes.json());
-            if (tiposRes.ok) setTiposObraMaestros(await tiposRes.json());
-            if (seccionalesRes.ok) setSeccionalesMaestras(await seccionalesRes.json());
-            if (deptoRes.ok) setDepartamentosMaestros(await deptoRes.json());
+    // 1. CHEQUEO DE AUTENTICACIÓN
+    if (!token) {
+      setError("Error de autenticación. Por favor, inicie sesión nuevamente.");
+      setLoading(false);
+      return;
+    }
+    const authHeader = { Authorization: `Bearer ${token}` };
+    try {
+      const [obrasRes, zonasRes, tiposRes, seccionalesRes, deptoRes] =
+        await Promise.all([
+          //CORRECCIÓN 1: Única llamada a ObraProyecto con AUTH
+          fetch(`${API_BASE_URL}/ObraProyecto`, { headers: authHeader }),
+          fetch(`${API_BASE_URL}/Zona`, { headers: authHeader }),
+          fetch(`${API_BASE_URL}/TipoObraProyecto`, { headers: authHeader }),
+          fetch(`${API_BASE_URL}/Seccional`, { headers: authHeader }),
+          fetch(`${API_BASE_URL}/Departamento`, { headers: authHeader }),
+        ]);
 
-            setError(null);
-            
-        } catch (err) {
-            console.error("Fallo al obtener datos:", err);
-            setError(
-                err.message || "No se pudieron cargar los datos principales. Asegúrate de que el backend esté corriendo."
-            );
-            setObras([]);
-        } finally {
-            setLoading(false);
+      if (obrasRes.ok) {
+        setObras(await obrasRes.json());
+      } else {
+        // CORRECCIÓN 1: Manejo de errores 401/403
+        if (obrasRes.status === 401 || obrasRes.status === 403) {
+          const errorBody = await obrasRes
+            .json()
+            .catch(() => ({ message: "Acceso denegado o sesión expirada." }));
+          throw new Error(
+            errorBody.message || `Acceso denegado. Código: ${obrasRes.status}.`
+          );
         }
-    };
-    
-    useEffect(() => {
-        // Solo carga si tiene permiso de vista.
-        if (canView) {
-            fetchObras();
-        } else {
-            setLoading(false);
-        }
-    }, [canView]);
+        throw new Error("Fallo al obtener la lista de obras.");
+      }
+
+      // Cargar Catálogos para filtros y mapeo de grilla
+      if (zonasRes.ok) setZonasMaestras(await zonasRes.json());
+      if (tiposRes.ok) setTiposObraMaestros(await tiposRes.json());
+      if (seccionalesRes.ok)
+        setSeccionalesMaestras(await seccionalesRes.json());
+      if (deptoRes.ok) setDepartamentosMaestros(await deptoRes.json());
+
+      setError(null);
+    } catch (err) {
+      console.error("Fallo al obtener datos:", err);
+      setError(
+        err.message ||
+          "No se pudieron cargar los datos principales. Asegúrate de que el backend esté corriendo."
+      );
+      setObras([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Solo carga si tiene permiso de vista.
+    if (canView) {
+      fetchObras();
+    } else {
+      setLoading(false);
+    }
+  }, [canView]);
 
   const handleGuardarObra = async (nuevaObraData, selectedDepartamentos) => {
     if (!canEdit) {
@@ -141,7 +170,10 @@ export default function Obras({ userName, onLogout }) {
       return;
     }
     const token = getToken(); // Obtener token aquí
-    const authHeaders = { "Content-Type": "application/json", 'Authorization': `Bearer ${token}` }; // ✅ Headers con token
+    const authHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    }; // ✅ Headers con token
 
     const isEditing =
       nuevaObraData.idObraProyecto && nuevaObraData.idObraProyecto !== 0;
@@ -242,7 +274,7 @@ export default function Obras({ userName, onLogout }) {
         try {
           const response = await fetch(`${API_BASE_URL}/ObraProyecto/${id}`, {
             method: "DELETE",
-            headers: { 'Authorization': `Bearer ${token}` }, 
+            headers: { Authorization: `Bearer ${token}` },
           });
           if (!response.ok) {
             throw new Error(
@@ -271,7 +303,10 @@ export default function Obras({ userName, onLogout }) {
       return;
     }
     const token = getToken();
-    const authHeaders = { "Content-Type": "application/json", 'Authorization': `Bearer ${token}` };
+    const authHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
     const estadoActualEsActivo =
       obra.estadoObra &&
       (obra.estadoObra.includes("Ejecución") ||
@@ -352,6 +387,10 @@ export default function Obras({ userName, onLogout }) {
       coincideEstado
     );
   });
+
+  // --- CÁLCULO DE CONTADORES ---
+  const obrasEnEjecucionCount = obras.filter(obra => obra.estadoObra !== 'Finalizada').length;
+  const obrasFinalizadasCount = obras.filter(obra => obra.estadoObra === 'Finalizada').length;
   // --- LIMPIAR FILTROS (Mantenida) ---
   const limpiarFiltros = () => {
     setFiltros({ nombre: "", tipo: 0, zona: 0, seccional: 0 });
@@ -388,37 +427,44 @@ export default function Obras({ userName, onLogout }) {
   if (loading)
     return <div className="loading-message">Cargando obras... 🔄</div>;
   if (error) return <div className="error-message">Error: {error}</div>;
-  
+
   return (
     <>
       <Header nombreUsuario={userName} onLogout={onLogout} />
       <div className="obras-container">
         {/* CARDS DE ESTADO QUE FUNCIONAN COMO FILTRO */}
         <div className="estado-cards">
-          <div
-            className={`card ejecucion ${
-              estadoFiltro === "Ejecución" ? "seleccionada" : ""
-            }`}
-            onClick={() =>
-              setEstadoFiltro(estadoFiltro === "Ejecución" ? null : "Ejecución")
-            }
-          >
-            <h3>Obras Ejecución</h3>
-            <p>Ver en curso</p>
-          </div>{" "}
-          <div
-            className={`card finalizadas ${
-              estadoFiltro === "Finalizada" ? "seleccionada" : ""
-            }`}
-            onClick={() =>
-              setEstadoFiltro(
-                estadoFiltro === "Finalizada" ? null : "Finalizada"
-              )
-            }
-          >
-            <h3>Obras finalizadas</h3> <p>Ver completadas</p>
-          </div>
-        </div>
+          <div
+            className={`card ejecucion ${
+              estadoFiltro === "Ejecución" ? "seleccionada" : ""
+            }`}
+            onClick={() =>
+              setEstadoFiltro(estadoFiltro === "Ejecución" ? null : "Ejecución")
+            }
+          >
+            <h3>
+              Obras Ejecución{" "}
+              <span className="card-contador">{obrasEnEjecucionCount}</span>
+            </h3>
+            <p>Ver en curso</p>
+          </div>{" "}
+          <div
+            className={`card finalizadas ${
+              estadoFiltro === "Finalizada" ? "seleccionada" : ""
+            }`}
+            onClick={() =>
+              setEstadoFiltro(
+                estadoFiltro === "Finalizada" ? null : "Finalizada"
+              )
+            }
+          >
+            <h3>
+              Obras finalizadas{" "}
+              <span className="card-contador">{obrasFinalizadasCount}</span>
+            </h3>{" "}
+            <p>Ver completadas</p>
+          </div>
+        </div>
         {/* BOTÓN NUEVA OBRA (Solo si puede editar) */}
         {canEdit && (
           <button
@@ -505,7 +551,7 @@ export default function Obras({ userName, onLogout }) {
                 <th>Avance por Tarea</th>
                 <th>Equipo/s</th>
                 <th>Tareas</th>
-                <th>Longitud (m)</th>
+                <th>Longitud (km)</th>
                 <th>Tipo de Superficie</th>
                 <th>Tipo de Obra</th>
                 <th>Estado</th>
@@ -582,7 +628,7 @@ export default function Obras({ userName, onLogout }) {
                     <td style={{ textAlign: "center" }}>
                       {new Date(obra.fechaFin).toLocaleDateString()}
                     </td>
-                    {/* 1. Avance por Tarea (CORREGIDO: Solo Avance, Vertical) */}
+                    {/* 1. Avance por Tarea  */}
                     <td>
                       {obra.tareas.length > 0
                         ? obra.tareas.map((tarea) => (
@@ -597,13 +643,13 @@ export default function Obras({ userName, onLogout }) {
                     </td>
                     {/* 2. Equipo/s (CORREGIDO: Solo Equipos, Vertical) */}
                     <td>
-                      {obra.equipos.length > 0
-                        ? obra.equipos.map((equipo) => (
+                      {getEquiposUnicos(obra.tareas).length > 0
+                        ? getEquiposUnicos(obra.tareas).map((equipo) => (
                             <span
                               key={equipo.idEquipo}
                               className="tag tag-equipo"
                             >
-                              {equipo.nombre} ({equipo.codigo})
+                              {equipo.codigo}
                             </span>
                           ))
                         : "N/A"}
@@ -612,13 +658,17 @@ export default function Obras({ userName, onLogout }) {
                     <td>
                       {obra.tareas.length > 0
                         ? obra.tareas.map((tarea) => (
-                            <span key={tarea.idTarea} className="tag tag-tarea">
-                              {tarea.codigo}
+                            <span
+                              key={tarea.idTarea}
+                              className="tag tag-tarea"
+                              title={tarea.nombre} // Muestra el nombre completo al pasar el mouse
+                            >
+                              {tarea.nombre}
                             </span>
                           ))
                         : "N/A"}
                     </td>
-                    {/* Longitud (m) */}
+                    {/* Longitud (km) */}
                     <td style={{ textAlign: "center" }}>{obra.longitud}</td>
                     {/* Tipo de Superficie */}
                     <td style={{ textAlign: "center" }}>

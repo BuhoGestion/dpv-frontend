@@ -48,6 +48,23 @@
     font-size: 14px;
     opacity: 0.9;
 }
+/*  ESTILO PARA CARD SELECCIONADA */
+.card.seleccionada {
+    /* Resalta la selección con un borde y una sombra más fuerte */
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border: 3px solid white; /* Borde blanco para resaltar la tarjeta */
+}
+
+/*ESTILO PARA EL CONTADOR */
+.card-contador {
+    background-color: rgba(255, 255, 255, 0.2); /* Fondo blanco transparente */
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 18px; /* Tamaño ligeramente más pequeño que el título */
+    font-weight: 700;
+    margin-left: 10px;
+}
 
 /* ==== BOTÓN NUEVA OBRA ==== */
 .btn-nueva-obra {

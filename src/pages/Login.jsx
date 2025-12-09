@@ -5,7 +5,7 @@ import "../styles/Login.css";
 import Swal from "sweetalert2";
 
 // Asumiendo la URL base de tu API
-const API_URL = "https://localhost:44311/api/Auth/login";
+const API_URL = "https://buhovialws.mendoza.gov.ar/api/Auth/login";
 
 export default function Login({ setAuthKey }) {
   const navigate = useNavigate();
@@ -115,9 +115,9 @@ export default function Login({ setAuthKey }) {
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
           </form>
-          <div className="forgot">
+          {/*<div className="forgot">
             <a href="#">Olvidé mi clave</a>
-          </div>
+          </div>*/}
         </div>
       </div>
       {/* Footer fijo */}

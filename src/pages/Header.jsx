@@ -34,14 +34,14 @@ function Header({ nombreUsuario, onLogout }) {
                 <User size={20} className="user-icon" /> 
                 <strong>{nombreUsuario}</strong>
               </div>
-              <p className="subsecretaria-text">Subsecretaría de Infraestructura y Desarrollo Territorial</p>
+              <p className="subsecretaria-text">Departamento Provincial de Vialidad</p>
             </div>
             <button className="btn-logout" onClick={onLogout} title="Cerrar Sesión">
               <LogOut size={20} />
             </button>
           </div>
         ) : (
-          <p className="subsecretaria-text">Subsecretaría de Infraestructura y Desarrollo Territorial</p>
+          <p className="subsecretaria-text">Departamento Provincial de Vialidad</p>
         )}
       </div>
     </header>

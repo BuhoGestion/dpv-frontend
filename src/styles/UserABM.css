@@ -1,6 +1,3 @@
-/* COMPONENTE UserABM.css (Estilos Esenciales) */
-
-/* Contenedor principal */
 .user-management-container {
     max-width: 1200px;
     margin: 40px auto;
@@ -8,6 +5,7 @@
     background-color: #f4f7f9;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
 }
 
 h2 {

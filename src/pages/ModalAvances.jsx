@@ -4,6 +4,24 @@ import "../styles/ModalAvances.css"; // Asegúrate de que los estilos existan
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const getToken = () => localStorage.getItem("authToken");
+
+// Formatea una fecha en formato AAAA-MM-DD a DD/MM/AAAA (o lo que se prefiera)
+// Esta es una función auxiliar que te ayudará a mostrar la fecha correctamente
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        // Ajuste para evitar problemas de zona horaria si solo se pasa la fecha (YYYY-MM-DD)
+        const day = date.getUTCDate().toString().padStart(2, '0');
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+        const year = date.getUTCFullYear();
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return dateString; // Devuelve el string original si falla el parseo
+    }
+};
+
+
 export default function ModalAvances({ obra: obraInicial, onClose }) {
     // Estado para la obra completa
     const [obraCompleta, setObraCompleta] = useState(null);
@@ -21,7 +39,8 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
         observacion: "",
     });
     const [selectedEquipos, setSelectedEquipos] = useState([]);
-
+    const [filtroEquipo, setFiltroEquipo] = useState(""); 
+    
     // --- EFECTO 1: Cargar Obra Completa por ID (SIN CAMBIOS) ---
     useEffect(() => {
         const fetchObraCompleta = async () => {
@@ -62,7 +81,7 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
         fetchObraCompleta();
     }, [obraInicial?.idObraProyecto]);
 
-    // --- EFECTO 2: Cargar Catálogos (Tareas y Equipos FILTRADOS por Zona) ---
+    // --- EFECTO 2: Cargar Catálogos (Tareas y Equipos) (SIN CAMBIOS) ---
     useEffect(() => {
     const fetchCatalogos = async () => {
         setLoadingCatalogos(true);
@@ -77,7 +96,7 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
 
             // 2. CARGAR EQUIPOS: 
             const equiposRes = await fetch(`${API_BASE_URL}/Equipo`, { headers: authHeader });
-                        
+                            
             if (!equiposRes.ok) {
                  if (equiposRes.status === 404) {
                      setTodosLosEquipos([]);
@@ -125,7 +144,6 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
     };
 
     const handleToggleEquipo = (equipoId) => {
-    // Ya no se necesita isAvailable como parámetro ni la condición IF
     setSelectedEquipos((prev) =>
         prev.includes(equipoId)
             ? prev.filter((id) => id !== equipoId)
@@ -190,10 +208,16 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
         onClose(false);
     };
 
-    // --- FILTRADO DE EQUIPOS POR ZONA ---
-    // ELIMINADO: Ya no es necesario el useMemo.
+    // LÓGICA DE FILTRADO (DEL CAMBIO ANTERIOR)
+    const equiposFiltrados = todosLosEquipos.filter(equipo => {
+        const codigo = equipo.codigoEquipo?.toLowerCase() || '';
+        const nombre = equipo.nombreEquipo?.toLowerCase() || '';
+        const filtro = filtroEquipo.toLowerCase().trim();
+        
+        return codigo.includes(filtro) || nombre.includes(filtro);
+    });
 
-    // --- RENDER (Corregido para usar 'todosLosEquipos' en el JSX) ---
+    // --- RENDER ---
     if (loadingObra || loadingCatalogos) {
         return (
             <div className="modal-content-avances">
@@ -231,37 +255,68 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
 
     return (
         <div className="modal-content-avances">
-            <div className="modal-header">
-                <h2>Asignación de Tareas y Avances</h2>
-                <button onClick={handleCerrar}>✕</button>
-            </div>
-
             <div className="modal-body-avances">
                 <h3>Obra: {obraCompleta.nombreObra || "Desconocida"}</h3>
                 <h4>Zona: {obraCompleta.zona || "N/A"}</h4>
 
-                {/* Tabla de tareas/avances (SIN CAMBIOS) */}
                 <table className="tabla-avances">
-                    {/* ... (Contenido de la tabla) ... */}
                     <thead>
                         <tr>
                             <th>Tarea (Código)</th>
                             <th>Nombre</th>
+                            <th>Equipos Asignados</th>
+                            <th>Último Avance</th>
                             <th>Avance Total (%)</th>
                         </tr>
                     </thead>
+                    {/* Cuerpo de la Tabla: MODIFICADO PARA BUSCAR EL ÚLTIMO AVANCE */}
                     <tbody>
                         {tareasAsignadas.length > 0 ? (
-                            tareasAsignadas.map((tarea) => (
-                                <tr key={tarea.idTarea}>
-                                    <td>{tarea.codigo || 'N/A'}</td>
-                                    <td>{tarea.nombre || 'N/A'}</td>
-                                    <td>{tarea.avanceTotal || 0}%</td>
-                                </tr>
-                            ))
+                            tareasAsignadas.map((tarea) => {
+                               
+                                const ultimoAvance = tarea.historialAvances?.[0] || {}; 
+
+                                // 2. Extraer equipos del último avance
+                                let equiposCodigos = 'Sin Equipos';
+                                if (ultimoAvance.equipos && ultimoAvance.equipos.length > 0) {
+                                    // Mapea los equipos asociados al AVANCE (no a la TAREA global)
+                                    equiposCodigos = ultimoAvance.equipos
+                                        .map(e => e.codigoEquipo || 'S/C') 
+                                        .join(', ');
+                                } else {
+                                    // Si el avance no tiene equipos, intenta usar los equipos asignados a la Tarea (por si la API los maneja diferente)
+                                    // Esta es la lógica que tenías antes:
+                                     const equiposTarea = (tarea.equipos || [])
+                                         .map(e => e.codigoEquipo || 'S/C')
+                                         .join(', ');
+                                     if (equiposTarea) {
+                                         equiposCodigos = equiposTarea;
+                                     }
+                                }
+
+                                // 3. Extraer la fecha del último avance
+                                // Asumimos que el campo se llama 'fechaAvance' o 'fecha'
+                                const fechaAvance = ultimoAvance.fechaAvance || ultimoAvance.fecha;
+
+                                return (
+                                    <tr key={tarea.idTarea}>
+                                        <td>{tarea.codigo || 'N/A'}</td>
+                                        <td>{tarea.nombre || 'N/A'}</td>
+                                        {/* Columna Equipos Asignados */}
+                                        <td style={{fontSize: '0.85em', maxWidth: '200px', wordBreak: 'break-all'}}>
+                                            {equiposCodigos}
+                                        </td>
+                                        {/* Columna Fecha de Avance */}
+                                        <td>
+                                            {formatDate(fechaAvance) || 'N/A'} 
+                                        </td>
+                                        <td>{tarea.avanceTotal || 0}%</td>
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr>
-                                <td colSpan="3" style={{ textAlign: "center", color: "#777" }}>
+                                <td colSpan="5" style={{ textAlign: "center", color: "#777" }}>
                                     No hay tareas asignadas a esta obra
                                 </td>
                             </tr>
@@ -271,9 +326,9 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
 
                 <h4>Registrar Nuevo Avance / Asignar Tarea y Equipos</h4>
 
-                {/* Formulario */}
+                {/* Formulario (SIN CAMBIOS RELEVANTES) */}
                 <form onSubmit={handleAgregarAvance} className="form-avance">
-                    {/* Select Tarea (SIN CAMBIOS) */}
+                    {/* Select Tarea */}
                     <div>
                         <label>Tarea</label>
                         <select
@@ -291,44 +346,50 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
                         </select>
                     </div>
 
-                    {/* Sección Equipos: USA 'todosLosEquipos' directamente */}
+                    {/* Sección Equipos con Buscador (DEL CAMBIO ANTERIOR) */}
                     <div className="select-multiple-container">
-                            <label>Equipos a asignar a esta Tarea (Selección Global)</label>
-                            <div className="equipment-list" style={{ height: '150px', overflowY: 'auto', border: '1px solid #ccc', borderRadius: '4px', padding: '8px' }}>
+                        <label>Equipos a asignar a esta Tarea (Selección Global)</label>
+                        
+                        <input
+                            type="text"
+                            placeholder="Buscar por código o nombre..."
+                            value={filtroEquipo}
+                            onChange={(e) => setFiltroEquipo(e.target.value)}
+                            style={{ marginBottom: '8px', padding: '8px', width: '100%', boxSizing: 'border-box' }}
+                        />
+
+                        <div className="equipment-list" style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '8px' }}>                              {equiposFiltrados.length === 0 ? (
+                                <p className="placeholder-text" style={{ color: '#aaa' }}> 
+                                    {loadingCatalogos 
+                                        ? 'Cargando equipos...' 
+                                        : filtroEquipo 
+                                            ? 'No se encontraron equipos con ese código/nombre.'
+                                            : 'No se encontraron equipos disponibles en el sistema.'
+                                    }
+                                </p>
+                            ) : (
+                            equiposFiltrados.map(equipo => {
+                                const isSelected = selectedEquipos.includes(equipo.idEquipo);
                                 
-                                {/* ¡USAR 'todosLosEquipos' AHORA! */}
-                                {todosLosEquipos.length === 0 ? (
-                                    <p className="placeholder-text" style={{ color: '#aaa' }}> 
-                                        {/* ✅ EL MENSAJE AHORA ES GENÉRICO, YA NO DEPENDE DE 'idZona' */}
-                                        {loadingCatalogos ? 'Cargando equipos...' : 'No se encontraron equipos disponibles en el sistema.'}
-                                    </p>
-                               ) : (
-                                todosLosEquipos.map(equipo => {
-                                    // Mantenemos isAvailable solo para el estilo visual o la restricción de clic
-                                    const isAvailable = equipo.EstadoActual?.toLocaleUpperCase() === 'DISPONIBLE';
-                                    const isSelected = selectedEquipos.includes(equipo.idEquipo);
-                                    
-                                    return (
-                                        <div
-                                            key={equipo.idEquipo}
-                                            className={`equipment-item ${isSelected ? 'selected' : ''}`} 
-                                            onClick={() => handleToggleEquipo(equipo.idEquipo)}
-                                        >
-                                            <input
-                                                type="checkbox" checked={isSelected} readOnly
-                                                // La selección está abierta a todos (disponible y no disponible)
-                                                style={{ marginRight: '8px' }}
-                                            />
-                                            <span>{equipo.codigoEquipo || 'S/C'} - {equipo.nombreEquipo || 'Equipo sin nombre'}</span>
-                                            
-                                            {/*ESTE BLOQUE DE LA ETIQUETA SE ELIMINA */}
-                                            <span style={{ marginLeft: 'auto', fontWeight: 'bold', color: 'blue' }}>
-                                                (Disponible para Asignación) 
-                                            </span>
-                                            
-                                        </div>
-                                    );
-                                })
+                                return (
+                                    <div
+                                        key={equipo.idEquipo}
+                                        className={`equipment-item ${isSelected ? 'selected' : ''}`} 
+                                        onClick={() => handleToggleEquipo(equipo.idEquipo)}
+                                    >
+                                        <input
+                                            type="checkbox" checked={isSelected} readOnly
+                                            style={{ marginRight: '8px' }}
+                                        />
+                                        <span>{equipo.codigoEquipo || 'S/C'} - {equipo.nombreEquipo || 'Equipo sin nombre'}</span>
+                                        
+                                        <span style={{ marginLeft: 'auto', fontWeight: 'bold', color: 'blue', fontSize: '12px' }}>
+                                            (Disponible para Asignación) 
+                                        </span>
+                                        
+                                    </div>
+                                );
+                            })
                             )}
                         </div>
                         {selectedEquipos.length > 0 && (
@@ -336,7 +397,7 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
                         )}
                     </div>
 
-                    {/* Input Porcentaje (SIN CAMBIOS) */}
+                    {/* Input Porcentaje */}
                     <div>
                         <label>Porcentaje de Avance</label>
                         <input
@@ -345,7 +406,7 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
                         />
                     </div>
 
-                    {/* Input Fecha (SIN CAMBIOS) */}
+                    {/* Input Fecha */}
                     <div>
                         <label>Fecha del Avance</label>
                         <input
@@ -354,7 +415,16 @@ export default function ModalAvances({ obra: obraInicial, onClose }) {
                         />
                     </div>
 
-                    {/* Botones (SIN CAMBIOS) */}
+                    {/* Input Observación */}
+                    <div>
+                        <label>Observación (Opcional)</label>
+                        <textarea
+                            name="observacion" value={nuevoAvance.observacion} onChange={handleChange}
+                            rows="3" placeholder="Detalles del avance o asignación."
+                        />
+                    </div>
+
+                    {/* Botones */}
                     <div className="botones-avance">
                         <button type="submit" className="btn-agregar">
                             Registrar Avance y Equipos

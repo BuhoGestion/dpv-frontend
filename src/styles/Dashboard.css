@@ -1,75 +1,102 @@
 .dashboard {
-  font-family: Arial, sans-serif;
-  background: #fffafa;
-  min-height: 100vh;
-}
-
-.dashboard h2{
-  padding: 50px;
-}
-
-
-/* Contenido */
-.dashboard-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-}
-
-.chart-container {
-  position: relative;
-  width: 300px;
-  margin: auto;
-}
-
-.chart-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-/* En styles/Dashboard.css */
-.dashboard-content {
     padding: 20px;
-    max-width: 800px;
+    background-color: #f4f6f9; /* Fondo muy claro */
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+.dashboard h2 {
+    font-size: 2.0rem;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #e0e4eb;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+.dashboard-content {
+    display: flex;
+    gap: 30px; /* Espacio entre las tarjetas */
+    flex-wrap: wrap; /* Para que se ajusten en pantallas pequeñas */
+    justify-content: center; /* Centrar las tarjetas */
+}
+
+/* Estilo para las tarjetas individuales de los gráficos */
+.stat-card {
+    background-color: #ffffff;
+    border-radius: 12px; /* Bordes redondeados sutiles */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra elegante */
+    padding: 25px;
+    flex: 1; /* Ocupar espacio equitativamente */
+    min-width: 350px; /* Tamaño mínimo para evitar que se aplasten */
+    max-width: 450px; /* Tamaño máximo para centrar en pantalla grande */
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px); /* Pequeño efecto hover */
+}
+
+.stat-card h3 {
+    font-size: 1.5rem;
+    color: #444;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.total-display {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.total-display strong {
+    font-weight: 700;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+/* Contenedor del gráfico para aplicar la posición relativa para el texto central */
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* Tamaño fijo del gráfico */
+    height: 300px; /* Altura fija del gráfico */
     margin: 0 auto;
 }
 
-.chart-container {
-    position: relative;
-    width: 350px; /* Ajusta el tamaño de la dona */
-    height: 350px;
-    margin: 40px auto 20px;
-}
-
+/* Estilo del texto central dentro del Doughnut */
 .chart-center {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    text-align: center;
-    pointer-events: none;
-}
-
-.chart-center span {
-    font-size: 32px;
-    font-weight: bold;
-    color: #1e293b;
-}
-
-/* Títulos y texto */
-.dashboard-content h2 {
-    font-size: 28px;
+    font-size: 3rem; /* Tamaño grande para el total */
     font-weight: 700;
-    margin-bottom: 5px;
-    color: #5a2ca0;
+    color: #333;
+    line-height: 1;
 }
-.dashboard-content h3 {
+
+/* Mensajes de vacío */
+.no-data-message {
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    color: #777;
     margin-top: 20px;
-    font-size: 20px;
-    font-weight: 600;
+}
+
+/* Media Query para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .dashboard-content {
+        flex-direction: column;
+        align-items: center;
+    }
+    .stat-card {
+        min-width: 90%;
+    }
+    .dashboard h2 {
+        text-align: center;
+    }
 }
