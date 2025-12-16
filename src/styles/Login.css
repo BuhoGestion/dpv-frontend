@@ -1,3 +1,16 @@
+html, body {
+    /* 1. Elimina el margen predeterminado del navegador */
+    margin: 0;
+    
+    /* 2. Elimina el padding predeterminado (si lo hay) */
+    padding: 0;
+    
+    /* 3. Evita que el scroll aparezca si el contenido desborda ligeramente */
+    overflow-x: hidden; 
+    
+    /* Opcional: Para asegurar que el 100%vh y 100%vw funcionen correctamente */
+    box-sizing: border-box; 
+}
 /* Fondo */
 .login-page {
   height: 100vh;

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { ArrowRight, ArrowLeft, Save, X } from "lucide-react";
 
-const API_BASE_URL = "https://buhovialws.mendoza.gov.ar/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const PermisosModal = ({ user, onClose, onPermissionsUpdated }) => {
   const [allPermissions, setAllPermissions] = useState([]);

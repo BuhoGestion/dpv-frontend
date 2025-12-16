@@ -109,7 +109,7 @@ export default function Obras({ userName, onLogout }) {
       const [obrasRes, zonasRes, tiposRes, seccionalesRes, deptoRes] =
         await Promise.all([
           //CORRECCIÓN 1: Única llamada a ObraProyecto con AUTH
-          fetch(`${API_BASE_URL}/ObraProyecto`, { headers: authHeader }),
+          fetch(`${API_BASE_URL}/obras`, { headers: authHeader }),
           fetch(`${API_BASE_URL}/Zona`, { headers: authHeader }),
           fetch(`${API_BASE_URL}/TipoObraProyecto`, { headers: authHeader }),
           fetch(`${API_BASE_URL}/Seccional`, { headers: authHeader }),
@@ -302,6 +302,18 @@ export default function Obras({ userName, onLogout }) {
       );
       return;
     }
+    // --- NUEVA VALIDACIÓN PREVENTIVA ---
+    const monto = parseFloat(obra.montoContratado) || 0;
+    const vaAFinalizar = obra.estadoObra !== "Finalizada";
+
+    if (vaAFinalizar && monto <= 0) {
+      Swal.fire(
+        "Monto Requerido",
+        "No se puede finalizar la obra. El Monto debe ser mayor a cero.",
+        "warning"
+      );
+      return;
+    }
     const token = getToken();
     const authHeaders = {
       "Content-Type": "application/json",
@@ -389,8 +401,12 @@ export default function Obras({ userName, onLogout }) {
   });
 
   // --- CÁLCULO DE CONTADORES ---
-  const obrasEnEjecucionCount = obras.filter(obra => obra.estadoObra !== 'Finalizada').length;
-  const obrasFinalizadasCount = obras.filter(obra => obra.estadoObra === 'Finalizada').length;
+  const obrasEnEjecucionCount = obras.filter(
+    (obra) => obra.estadoObra !== "Finalizada"
+  ).length;
+  const obrasFinalizadasCount = obras.filter(
+    (obra) => obra.estadoObra === "Finalizada"
+  ).length;
   // --- LIMPIAR FILTROS (Mantenida) ---
   const limpiarFiltros = () => {
     setFiltros({ nombre: "", tipo: 0, zona: 0, seccional: 0 });
@@ -434,37 +450,44 @@ export default function Obras({ userName, onLogout }) {
       <div className="obras-container">
         {/* CARDS DE ESTADO QUE FUNCIONAN COMO FILTRO */}
         <div className="estado-cards">
-          <div
-            className={`card ejecucion ${
-              estadoFiltro === "Ejecución" ? "seleccionada" : ""
-            }`}
-            onClick={() =>
-              setEstadoFiltro(estadoFiltro === "Ejecución" ? null : "Ejecución")
-            }
-          >
-            <h3>
-              Obras Ejecución{" "}
-              <span className="card-contador">{obrasEnEjecucionCount}</span>
-            </h3>
-            <p>Ver en curso</p>
-          </div>{" "}
-          <div
-            className={`card finalizadas ${
-              estadoFiltro === "Finalizada" ? "seleccionada" : ""
-            }`}
-            onClick={() =>
-              setEstadoFiltro(
-                estadoFiltro === "Finalizada" ? null : "Finalizada"
-              )
-            }
-          >
-            <h3>
-              Obras finalizadas{" "}
-              <span className="card-contador">{obrasFinalizadasCount}</span>
-            </h3>{" "}
-            <p>Ver completadas</p>
-          </div>
-        </div>
+                   {" "}
+          <div
+            className={`card ejecucion ${
+              estadoFiltro === "Ejecución" ? "seleccionada" : ""
+            }`}
+            onClick={() =>
+              setEstadoFiltro(estadoFiltro === "Ejecución" ? null : "Ejecución")
+            }
+          >
+                       {" "}
+            <h3>
+                            Obras Ejecución              {" "}
+              <span className="card-contador">{obrasEnEjecucionCount}</span>   
+                     {" "}
+            </h3>
+                        <p>Ver en curso</p>         {" "}
+          </div>{" "}
+                   {" "}
+          <div
+            className={`card finalizadas ${
+              estadoFiltro === "Finalizada" ? "seleccionada" : ""
+            }`}
+            onClick={() =>
+              setEstadoFiltro(
+                estadoFiltro === "Finalizada" ? null : "Finalizada"
+              )
+            }
+          >
+                       {" "}
+            <h3>
+                            Obras finalizadas              {" "}
+              <span className="card-contador">{obrasFinalizadasCount}</span>   
+                     {" "}
+            </h3>{" "}
+                        <p>Ver completadas</p>         {" "}
+          </div>
+                 {" "}
+        </div>
         {/* BOTÓN NUEVA OBRA (Solo si puede editar) */}
         {canEdit && (
           <button

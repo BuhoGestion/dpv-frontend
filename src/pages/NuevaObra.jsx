@@ -168,11 +168,15 @@ export default function NuevaObra({ obra, onClose, onSave }) {
   };
 
   const mapFormToModel = () => {
-    const parseNumber = (val) => {
+    // Renombramos la función para ser más claros:
+    const parseDecimalValue = (val) => {
       if (val === "" || val === null || val === undefined) return null;
-      const numericValue = parseFloat(String(val).replace(",", "."));
+      // 🛑 CRÍTICO: Reemplazar COMA por PUNTO antes de la conversión
+      const cleanedValue = String(val).replace(",", "."); 
+      const numericValue = parseFloat(cleanedValue);
       return isNaN(numericValue) ? null : numericValue;
     };
+    
     const estadoObraId = obra?.idEstadoObraProyecto ?? 1;
 
     return {
@@ -186,8 +190,8 @@ export default function NuevaObra({ obra, onClose, onSave }) {
       observacion: form.observacion,
       fechaInicioObraProyecto: form.fechaInicioObraProyecto || null,
       fechaFinObraProyecto: form.fechaFinObraProyecto || null,
-      montoContrato: parseNumber(form.montoContrato),
-      longitud: parseNumber(form.longitud),
+      montoContrato: parseDecimalValue(form.montoContrato),
+      longitud: parseDecimalValue(form.longitud),
       idsDepartamentos: [],
       idsTareas: [],
     };

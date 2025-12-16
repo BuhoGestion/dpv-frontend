@@ -8,7 +8,7 @@ import Footer from "./Footer";
 import "../styles/UserABM.css";
 import PermisosModal from "./PermisosModal";
 
-const API_BASE_URL = "https://buhovialws.mendoza.gov.ar/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 //MODAL DE USUARIO ADAPTADO PARA CAMPOS SEPARADOS Y CLAVE GENERADA
 const UserModal = ({ userToEdit, onClose, onSave }) => {
@@ -184,11 +184,11 @@ const UserModal = ({ userToEdit, onClose, onSave }) => {
           </select>
           {/*CAMPOS DE CONTRASEÑA SOLO PARA EDICIÓN */}
           <>
-                                   {" "}
+                                   
             <label>
               Contraseña {isEditing ? "(dejar vacío para no cambiar)" : "*"}:
             </label>
-                                   {" "}
+                                   
             <input
               type="password"
               name="password"
@@ -196,11 +196,10 @@ const UserModal = ({ userToEdit, onClose, onSave }) => {
               onChange={handleChange}
               required={!isEditing}
             />
-                                                           {" "}
+                                                           
             <label>
               Confirmar Contraseña {isEditing ? "(si se ingresó nueva)" : "*"}:
             </label>
-                                   {" "}
             <input
               type="password"
               name="confirmPassword"
@@ -208,7 +207,6 @@ const UserModal = ({ userToEdit, onClose, onSave }) => {
               onChange={handleChange}
               required={!isEditing}
             />
-                               {" "}
           </>
           <div className="form-buttons">
             <button type="submit" className="btn-primary">
@@ -230,18 +228,65 @@ function UserABM({ userName, onLogout }) {
   const [modalPermisosOpen, setModalPermisosOpen] = useState(false); // **NUEVO:** Modal de Permisos
   const [userSelected, setUserSelected] = useState(null);
 
+  //NUEVOS ESTADOS para el filtro:
+  const [zonasFiltro, setZonasFiltro] = useState([]);
+  const [filtroZonaId, setFiltroZonaId] = useState(0); // 0 = Todas las Zonas
+  const [loadingFiltroZonas, setLoadingFiltroZonas] = useState(true);
+
+  // --- Cargar Zonas para el Filtro ---
+  useEffect(() => {
+    const fetchZonasFiltro = async () => {
+      try {
+        // Usamos el endpoint simple que devuelve todas las zonas
+        const response = await fetch(`${API_BASE_URL}/Zona`);
+        if (!response.ok) throw new Error("Error al cargar zonas para filtro.");
+        const data = await response.json();
+        setZonasFiltro(data);
+      } catch (error) {
+        console.error("Error cargando zonas:", error);
+      } finally {
+        setLoadingFiltroZonas(false);
+      }
+    };
+    fetchZonasFiltro();
+  }, []);
+
+  // --- Cargar Usuarios (Modificado para incluir filtro) ---
+  // Usamos useEffect para recargar cuando el filtro cambie
+  useEffect(() => {
+    fetchUsers();
+  }, [filtroZonaId]); // Dependencia del filtro
+
+  const getToken = () => localStorage.getItem("authToken");
+
   // --- Cargar Usuarios ---
   const fetchUsers = async () => {
     setLoading(true);
+
+    const token = getToken();
+    if (!token) {
+      // Manejo explícito del error de token
+      setError("Error de autenticación. Token no encontrado.");
+      setLoading(false);
+      return;
+    }
+
+    const authHeaders = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
     try {
-      const response = await fetch(`${API_BASE_URL}/Usuario`);
+      const response = await fetch(`${API_BASE_URL}/Usuario`, {
+        headers: authHeaders,
+      });
+
       if (!response.ok) {
         throw new Error(
           "Error al cargar la lista de usuarios. ¿Autorización fallida?"
         );
       }
       setUsers(await response.json());
-      console.log("✅ Lista de usuarios actualizada en el estado."); // <-- Añadir esto
+      console.log(" Lista de usuarios actualizada en el estado."); // <-- Añadir esto
       setError(null);
     } catch (err) {
       console.error(err);
@@ -374,14 +419,42 @@ function UserABM({ userName, onLogout }) {
     <>
       <Header nombreUsuario={userName} onLogout={onLogout} />
       <div className="user-management-container">
-        <h2>Gestión de Usuarios (ABM)</h2>
-
-        <button
-          className="btn-nueva-obra"
-          onClick={() => handleOpenUserModal(null)}
+        <h2>Gestión de Usuarios</h2>
+        {/* --- CONTROL DE FILTRO --- */}
+        <div
+          className="filter-controls"
+          style={{ marginBottom: "20px", display: "flex", gap: "20px" }}
         >
-          <UserPlus size={18} style={{ marginRight: "8px" }} /> NUEVO USUARIO
-        </button>
+          <button
+            className="btn-nueva-obra"
+            onClick={() => handleOpenUserModal(null)}
+          >
+            <UserPlus size={18} style={{ marginRight: "8px" }} /> NUEVO USUARIO
+          </button>
+
+          {/* <div style={{ display: "flex", alignItems: "center" }}>
+            <label style={{ marginRight: "10px", fontWeight: "bold" }}>
+              Filtrar por Zona:
+            </label>
+            <select
+              value={filtroZonaId}
+              onChange={(e) => setFiltroZonaId(parseInt(e.target.value) || 0)}
+              disabled={loadingFiltroZonas}
+            >
+              <option value={0}>-- Todas las Zonas --</option>
+              {loadingFiltroZonas ? (
+                <option disabled>Cargando zonas...</option>
+              ) : (
+                zonasFiltro.map((z) => (
+                  <option key={z.idZona} value={z.idZona}>
+                    {z.nombreZona}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>*/}
+        </div>
+        {/* --- FIN CONTROL DE FILTRO --- */}
 
         <div className="table-wrapper">
           <table className="user-table">
@@ -391,6 +464,7 @@ function UserABM({ userName, onLogout }) {
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Fecha Alta</th>
+                <th>Zona</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -405,22 +479,20 @@ function UserABM({ userName, onLogout }) {
                       ? new Date(user.fechaAlta).toLocaleDateString()
                       : "N/A"}
                   </td>
+                  <td>{user.nombreZona || "N/A"}</td>
+                  {/*MOSTRAR NOMBRE DE ZONA */}
                   <td className="actions-cell">
-                    {/* Icono de Permisos */}
+                    {/* Iconos de Acciones... */}
                     <Shield
                       className="icon permissions"
                       onClick={() => handleOpenPermisosModal(user)}
                       title="Asignar Permisos"
                     />
-
-                    {/* Icono de Editar */}
                     <Edit
                       className="icon edit"
                       onClick={() => handleOpenUserModal(user)}
                       title="Editar"
                     />
-
-                    {/* Icono de Eliminar */}
                     <Trash2
                       className="icon delete"
                       onClick={() => handleDelete(user)}
@@ -435,7 +507,7 @@ function UserABM({ userName, onLogout }) {
       </div>
       <Footer />
 
-      {/* Modal de Alta/Edición de Usuario */}
+      {/* Modales sin cambios... */}
       {modalUserOpen && (
         <UserModal
           userToEdit={userSelected}
@@ -444,7 +516,6 @@ function UserABM({ userName, onLogout }) {
         />
       )}
 
-      {/* Modal de Gestión de Permisos */}
       {modalPermisosOpen && userSelected && (
         <PermisosModal
           user={userSelected}
