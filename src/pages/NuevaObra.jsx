@@ -4,7 +4,7 @@ import "../styles/NuevaObra.css";
 import { usePermissions } from "../utils/authUtils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const getToken = () => localStorage.getItem("authToken");
+const getToken = () => sessionStorage.getItem("authToken");
 export default function NuevaObra({ obra, onClose, onSave }) {
   const { isFullAdmin } = usePermissions();
   // ESTADOS
@@ -172,11 +172,11 @@ export default function NuevaObra({ obra, onClose, onSave }) {
     const parseDecimalValue = (val) => {
       if (val === "" || val === null || val === undefined) return null;
       // 🛑 CRÍTICO: Reemplazar COMA por PUNTO antes de la conversión
-      const cleanedValue = String(val).replace(",", "."); 
+      const cleanedValue = String(val).replace(",", ".");
       const numericValue = parseFloat(cleanedValue);
       return isNaN(numericValue) ? null : numericValue;
     };
-    
+
     const estadoObraId = obra?.idEstadoObraProyecto ?? 1;
 
     return {

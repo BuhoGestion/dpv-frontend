@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="main-footer">
       <strong>
-        Copyright &copy; 2025{" "}
+        Copyright &copy; 2026{" "}
         <p>
           Departamento Provincial de Vialidad - Gobierno de Mendoza, Argentina.
         </p>

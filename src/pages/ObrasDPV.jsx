@@ -5,6 +5,7 @@ import {
   Trash2,
   ArrowRightCircle,
   AlertOctagon,
+  Download,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import "../styles/Obras.css";
@@ -13,15 +14,18 @@ import Footer from "./Footer";
 import NuevaObra from "./NuevaObra";
 import ModalAvances from "./ModalAvances";
 import { usePermissions } from "../utils/authUtils";
+import { generarReporteExcel } from "../utils/reporteUtils";
+
 // URL base de tu API (usando variables de entorno, buena práctica)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const ESTADOS_OBRA = {
   Ejecución: 1,
   Finalizada: 2,
 };
 
 //FUNCIÓN AUXILIAR PARA OBTENER TOKEN
-const getToken = () => localStorage.getItem("authToken");
+const getToken = () => sessionStorage.getItem("authToken");
 export default function Obras({ userName, onLogout }) {
   const { hasPermission, isFullAdmin } = usePermissions();
   const canEdit = isFullAdmin || hasPermission("OBRAS_EDITAR"); // Permite Crear, Editar, Eliminar, Cambiar Estado
@@ -109,17 +113,21 @@ export default function Obras({ userName, onLogout }) {
       const [obrasRes, zonasRes, tiposRes, seccionalesRes, deptoRes] =
         await Promise.all([
           //CORRECCIÓN 1: Única llamada a ObraProyecto con AUTH
-          fetch(`${API_BASE_URL}/obras`, { headers: authHeader }),
+          fetch(`${API_BASE_URL}/ObraProyecto`, { headers: authHeader }),
           fetch(`${API_BASE_URL}/Zona`, { headers: authHeader }),
           fetch(`${API_BASE_URL}/TipoObraProyecto`, { headers: authHeader }),
           fetch(`${API_BASE_URL}/Seccional`, { headers: authHeader }),
           fetch(`${API_BASE_URL}/Departamento`, { headers: authHeader }),
         ]);
 
+      // Caso normal: 200 → lista de obras
       if (obrasRes.ok) {
         setObras(await obrasRes.json());
+      }
+      // Caso usuario sin obras: 404 → lo tomamos como lista vacía
+      else if (obrasRes.status === 404) {
+        setObras([]);
       } else {
-        // CORRECCIÓN 1: Manejo de errores 401/403
         if (obrasRes.status === 401 || obrasRes.status === 403) {
           const errorBody = await obrasRes
             .json()
@@ -160,6 +168,9 @@ export default function Obras({ userName, onLogout }) {
     }
   }, [canView]);
 
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [filtros, estadoFiltro]); // Si cambia cualquier filtro, vuelve a la página 1
   const handleGuardarObra = async (nuevaObraData, selectedDepartamentos) => {
     if (!canEdit) {
       Swal.fire(
@@ -173,7 +184,7 @@ export default function Obras({ userName, onLogout }) {
     const authHeaders = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
-    }; // ✅ Headers con token
+    }; // Headers con token
 
     const isEditing =
       nuevaObraData.idObraProyecto && nuevaObraData.idObraProyecto !== 0;
@@ -370,7 +381,8 @@ export default function Obras({ userName, onLogout }) {
       }
     });
   };
-
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [filasPorPagina, setFilasPorPagina] = useState(5); // El default que quieras
   // --- LÓGICA DE FILTRADO DINÁMICO (Mantenida) ---
   const obrasFiltradas = obras.filter((obra) => {
     const filtroNombre = filtros.nombre.toLowerCase();
@@ -399,6 +411,18 @@ export default function Obras({ userName, onLogout }) {
       coincideEstado
     );
   });
+
+  // Cálculos de paginación
+  const indiceUltimoItem = paginaActual * filasPorPagina;
+  const indicePrimerItem = indiceUltimoItem - filasPorPagina;
+
+  // Esta es la lista que realmente vas a usar en el .map() de la tabla
+  const itemsPaginados = obrasFiltradas.slice(
+    indicePrimerItem,
+    indiceUltimoItem
+  );
+
+  const totalPaginas = Math.ceil(obrasFiltradas.length / filasPorPagina);
 
   // --- CÁLCULO DE CONTADORES ---
   const obrasEnEjecucionCount = obras.filter(
@@ -444,13 +468,19 @@ export default function Obras({ userName, onLogout }) {
     return <div className="loading-message">Cargando obras... 🔄</div>;
   if (error) return <div className="error-message">Error: {error}</div>;
 
+  //=====================//
+  //Para exportar en formato excel "El Profesor"
+  const handleExportar = () => {
+    generarReporteExcel(obrasFiltradas, getEquiposUnicos);
+  };
+
   return (
     <>
       <Header nombreUsuario={userName} onLogout={onLogout} />
       <div className="obras-container">
         {/* CARDS DE ESTADO QUE FUNCIONAN COMO FILTRO */}
         <div className="estado-cards">
-                   {" "}
+                   
           <div
             className={`card ejecucion ${
               estadoFiltro === "Ejecución" ? "seleccionada" : ""
@@ -459,15 +489,15 @@ export default function Obras({ userName, onLogout }) {
               setEstadoFiltro(estadoFiltro === "Ejecución" ? null : "Ejecución")
             }
           >
-                       {" "}
+                       
             <h3>
-                            Obras Ejecución              {" "}
+                            Obras Ejecución              
               <span className="card-contador">{obrasEnEjecucionCount}</span>   
-                     {" "}
+                     
             </h3>
-                        <p>Ver en curso</p>         {" "}
-          </div>{" "}
-                   {" "}
+                        <p>Ver en curso</p>         
+          </div>
+                   
           <div
             className={`card finalizadas ${
               estadoFiltro === "Finalizada" ? "seleccionada" : ""
@@ -478,38 +508,43 @@ export default function Obras({ userName, onLogout }) {
               )
             }
           >
-                       {" "}
+                       
             <h3>
-                            Obras finalizadas              {" "}
+                            Obras finalizadas              
               <span className="card-contador">{obrasFinalizadasCount}</span>   
-                     {" "}
-            </h3>{" "}
-                        <p>Ver completadas</p>         {" "}
+                     
+            </h3>
+                        <p>Ver completadas</p>         
           </div>
-                 {" "}
+                 
         </div>
-        {/* BOTÓN NUEVA OBRA (Solo si puede editar) */}
-        {canEdit && (
-          <button
-            className="btn-nueva-obra"
-            onClick={() => {
-              setObraSeleccionada(null);
+        {/* BOTÓN NUEVA OBRA Y EXPORTAR */}
+        <div className="acciones-principales-container">
+          {canEdit && (
+            <button
+              className="btn-nueva-obra"
+              onClick={() => {
+                setObraSeleccionada(null);
+                setMostrarNuevaObra(true);
+              }}
+            >
+              NUEVA OBRA
+            </button>
+          )}
 
-              setMostrarNuevaObra(true);
-            }}
-          >
-            NUEVA OBRA
+          <button className="btn-exportar" onClick={handleExportar}>
+            <Download size={20} style={{ marginRight: "10px" }} />
+            EXPORTAR EXCEL
           </button>
-        )}
+        </div>
         {/* ==== FILTROS DINÁMICOS ==== */}
         <div className="filtros">
-          {" "}
           <input
             type="text"
             placeholder="Buscar por nombre..."
             value={filtros.nombre}
             onChange={(e) => setFiltros({ ...filtros, nombre: e.target.value })}
-          />{" "}
+          />
           <select
             value={filtros.tipo}
             onChange={(e) => setFiltros({ ...filtros, tipo: e.target.value })}
@@ -522,7 +557,7 @@ export default function Obras({ userName, onLogout }) {
               >
                 {tipo.nombreTipoObraProyecto}
               </option>
-            ))}{" "}
+            ))}
           </select>
           {/* FILTRO ZONA */}
           <select
@@ -534,7 +569,7 @@ export default function Obras({ userName, onLogout }) {
               <option key={zona.idZona} value={zona.idZona}>
                 {zona.nombreZona}
               </option>
-            ))}{" "}
+            ))}
           </select>
           {/* FILTRO SECCIONAL */}
           <select
@@ -590,9 +625,9 @@ export default function Obras({ userName, onLogout }) {
                   </td>
                 </tr>
               ) : (
-                obrasFiltradas.map((obra, index) => (
+                itemsPaginados.map((obra, index) => (
                   <tr key={obra.idObraProyecto}>
-                    <td>{index + 1}</td>
+                    <td>{indicePrimerItem + index + 1}</td>
                     {/* COLUMNA DE ACCIONES CON PERMISOS */}
                     <td className="acciones">
                       {/* Avances: Visible si canView es true y no está finalizada */}
@@ -724,6 +759,55 @@ export default function Obras({ userName, onLogout }) {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="paginacion-container">
+          <div className="paginacion-info">
+            <span>Página</span>
+            <input
+              type="number"
+              value={paginaActual}
+              onChange={(e) => {
+                const p = Number(e.target.value);
+                if (p > 0 && p <= totalPaginas) setPaginaActual(p);
+              }}
+              className="input-pagina"
+            />
+            <span>de {totalPaginas}</span>
+          </div>
+
+          <div className="paginacion-botones">
+            <button
+              className="btn-nav"
+              disabled={paginaActual === 1}
+              onClick={() => setPaginaActual(paginaActual - 1)}
+            >
+              {"<"}
+            </button>
+            <button
+              className="btn-nav"
+              disabled={paginaActual === totalPaginas}
+              onClick={() => setPaginaActual(paginaActual + 1)}
+            >
+              {">"}
+            </button>
+          </div>
+
+          <div className="paginacion-selector">
+            <select
+              className="select-filas"
+              value={filasPorPagina}
+              onChange={(e) => {
+                setFilasPorPagina(Number(e.target.value));
+                setPaginaActual(1);
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+            </select>
+            <span className="texto-filas">Filas por página</span>
+          </div>
         </div>
       </div>
       <Footer />

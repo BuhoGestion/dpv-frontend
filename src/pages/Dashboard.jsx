@@ -2,30 +2,24 @@ import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import Header from "./Header";
-import "../styles/Dashboard.css"; // Asegúrate de que este CSS esté actualizado
+import "../styles/Dashboard.css";
 import Footer from "./Footer";
 import { LayoutDashboard, Loader, AlertCircle } from "lucide-react";
+import Swal from "sweetalert2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// Base URL para asegurar consistencia
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const getToken = () => localStorage.getItem("authToken");
+const getToken = () => sessionStorage.getItem("authToken");
 
 function Dashboard({ userName, onLogout }) {
-  // --- ESTADOS PARA OBRAS EN EJECUCIÓN ---
   const [totalEjecucion, setTotalEjecucion] = useState(0);
   const [porZonaEjecucion, setPorZonaEjecucion] = useState([]);
-
-  // --- ESTADOS PARA OBRAS FINALIZADAS (Nuevos) ---
   const [totalFinalizadas, setTotalFinalizadas] = useState(0);
   const [porZonaFinalizadas, setPorZonaFinalizadas] = useState([]);
-
-  // --- ESTADOS DE UI ---
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Colores consistentes y profesionales (puedes ajustar estos)
   const chartColors = [
     "#10B981",
     "#EF4444",
@@ -35,33 +29,23 @@ function Dashboard({ userName, onLogout }) {
     "#06B6D4",
   ];
 
-  // --- FUNCIÓN DE CARGA DE DATOS ---
+  // Función para abrir el PDF
+  const handleOpenPDF = () => {
+    window.open("/instructivo.pdf", "_blank");
+  };
+
+  // --- EFECTO PARA CARGA DE DATOS ---
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      setError(null);
       const token = getToken();
-
-      //  Si no hay token, no podemos continuar.
       if (!token) {
-        setError("Error de autenticación. Token no encontrado.");
+        setError("Error de autenticación.");
         setLoading(false);
-        // Opcional: Redirigir a login
         return;
       }
-
-      //  Definir los headers de autenticación
-      const authHeaders = {
-        Authorization: `Bearer ${token}`,
-        // Aunque no es estrictamente necesario para GET, lo mantenemos por convención
-      };
-
-      // Opciones de fetch (para reutilizar en todas las llamadas)
-      const fetchOptions = {
-        headers: authHeaders,
-      };
+      const fetchOptions = { headers: { Authorization: `Bearer ${token}` } };
       try {
-        // Carga de datos paralela (4 peticiones)
         const [ejecTotalRes, ejecZonaRes, finTotalRes, finZonaRes] =
           await Promise.all([
             fetch(`${API_BASE_URL}/ObraProyecto/total-ejecucion`, fetchOptions),
@@ -79,24 +63,12 @@ function Dashboard({ userName, onLogout }) {
             ),
           ]);
 
-        // Manejo de respuestas de Ejecución
-        if (!ejecTotalRes.ok || !ejecZonaRes.ok)
-          throw new Error(`Fallo al obtener datos de obras en ejecución.`);
         setTotalEjecucion((await ejecTotalRes.json()).total || 0);
         setPorZonaEjecucion(await ejecZonaRes.json());
-
-        // Manejo de respuestas de Finalizadas
-        if (!finTotalRes.ok || !finZonaRes.ok)
-          throw new Error(`Fallo al obtener datos de obras finalizadas.`);
         setTotalFinalizadas((await finTotalRes.json()).total || 0);
         setPorZonaFinalizadas(await finZonaRes.json());
       } catch (err) {
-        console.error("Error cargando Dashboard:", err);
-        setError(err.message || "Error de conexión con el servidor.");
-        setTotalEjecucion(0);
-        setPorZonaEjecucion([]);
-        setTotalFinalizadas(0);
-        setPorZonaFinalizadas([]);
+        setError("Error de conexión con el servidor.");
       } finally {
         setLoading(false);
       }
@@ -104,103 +76,71 @@ function Dashboard({ userName, onLogout }) {
     fetchData();
   }, []);
 
-  // --- Lógica del Gráfico en EJECUCIÓN ---
-  const dataEjecucion = {
-    labels: porZonaEjecucion.map((z) => z.zona),
-    datasets: [
-      {
-        data: porZonaEjecucion.map((z) => z.cantidad),
-        backgroundColor: chartColors.slice(0, porZonaEjecucion.length), // Asegura que solo se usen los colores necesarios
-        hoverBackgroundColor: porZonaEjecucion.map(
-          (_, i) => `${chartColors[i]}CC`
-        ), // Un hover más sutil
-        borderWidth: 0, // Remover el borde blanco para un look más limpio
-      },
-    ],
-  };
+  // --- EFECTO PARA EL MODAL DE BIENVENIDA (INSTRUCTIVO AUTOMÁTICO) ---
+  useEffect(() => {
+    // Usamos el nombre del usuario para que la preferencia sea individual
+    const storageKey = `ocultarInstructivo_${userName}`;
+    const yaSilenciado = sessionStorage.getItem(storageKey);
 
-  // --- Lógica del Gráfico FINALIZADAS ---
-  const dataFinalizadas = {
-    labels: porZonaFinalizadas.map((z) => z.zona),
-    datasets: [
-      {
-        data: porZonaFinalizadas.map((z) => z.cantidad),
-        backgroundColor: chartColors.slice(0, porZonaFinalizadas.length),
-        hoverBackgroundColor: porZonaFinalizadas.map(
-          (_, i) => `${chartColors[i]}CC`
-        ),
-        borderWidth: 0,
-      },
-    ],
-  };
+    // Si el usuario ya marcó "No volver a mostrar", cortamos la ejecución aquí
+    if (yaSilenciado === "true") return;
+
+    Swal.fire({
+      title: "¡Bienvenido al Sistema DPV!",
+      text: "Ya se encuentra disponible el nuevo instructivo          ¡Consúltalo para despejar tus dudas!",
+      icon: "info",
+      iconColor: "#3B82F6",
+      showCancelButton: true,
+      showDenyButton: true, // Este es el botón de "No volver a mostrar"
+      confirmButtonText: "📂 Ver Instructivo",
+      denyButtonText: "No volver a mostrar",
+      cancelButtonText: "Cerrar",
+      confirmButtonColor: "#2563eb", // Azul
+      denyButtonColor: "#ff4545ff", // Gris (para que no sea tan agresivo como el rojo)
+      cancelButtonColor: "#606f80ff", // Gris claro
+      reverseButtons: true,
+      backdrop: `rgba(15, 23, 42, 0.7)`,
+      allowOutsideClick: false,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Opción: Ver Instructivo
+        handleOpenPDF();
+        // Opcional: Si quieres que deje de salir después de verlo una vez,
+        // podrías poner el sessionStorage.setItem aquí también.
+      } else if (result.isDenied) {
+        // Opción: No volver a mostrar (PERMANENTE)
+        sessionStorage.setItem(storageKey, "true");
+
+        // Confirmación pequeña de que se guardó la preferencia
+        Swal.fire({
+          title: "Preferencias guardadas",
+          text: "No volverás a ver este aviso.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+      // Si toca "Luego" (Cancel), no hace nada y el ciclo se repite al próximo login.
+    });
+  }, [userName]); // Se activa al detectar el usuario
 
   const options = {
-    cutout: "80%", // Aumento del corte para un anillo más delgado y elegante
+    cutout: "80%",
     responsive: true,
-    maintainAspectRatio: false, // Permitir que el CSS controle el tamaño
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "bottom", // Mover leyenda abajo para más espacio en el gráfico
-        labels: {
-          boxWidth: 15,
-          padding: 20,
-          font: { size: 14 }, // Tipografía más legible
-        },
-      },
-      tooltip: {
-        callbacks: {
-          // Mostrar porcentaje y cantidad en el tooltip
-          label: ({ label, raw, total }) => {
-            const percentage = ((raw / total) * 100).toFixed(1);
-            return `${label}`;
-          },
-        },
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        titleFont: { weight: "bold" },
+        position: "bottom",
+        labels: { boxWidth: 15, padding: 20, font: { size: 14 } },
       },
     },
   };
 
-  if (loading) {
-    return (
-      <div className="dashboard loading">
-        <Header nombreUsuario={userName} onLogout={onLogout} />
-        <main className="dashboard-content">
-          <Loader className="spinner" size={40} color="#3B82F6" />
-          <p>Cargando datos del Dashboard... 🔄</p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <>
-        <Header nombreUsuario={userName} onLogout={onLogout} />
-        <div className="dashboard error">
-          <main className="dashboard-content">
-            <h2>
-              <AlertCircle color="red" /> Obras DPV - Error
-            </h2>
-            <p style={{ color: "red", fontWeight: "bold" }}>Error: {error}</p>
-            <p>
-              No se pudieron cargar los gráficos. Verifique la conexión con el
-              backend.
-            </p>
-          </main>
-        </div>
-        <Footer />
-      </>
-    );
-  }
-
-  // Componente auxiliar para renderizar el gráfico
   const ChartCard = ({ title, total, data }) => (
     <div className="stat-card">
       <h3>{title}</h3>
       <p className="total-display">
-        Total obras: <strong>{total}</strong>
+        Total: <strong>{total}</strong>
       </p>
       {total > 0 ? (
         <div className="chart-container">
@@ -211,42 +151,74 @@ function Dashboard({ userName, onLogout }) {
         </div>
       ) : (
         <div className="no-data-message">
-          <p>
-            No hay obras{" "}
-            {title.toLowerCase().includes("ejecución")
-              ? "en ejecución"
-              : "finalizadas"}{" "}
-            para mostrar.
-          </p>
+          <p>Sin datos para mostrar.</p>
         </div>
       )}
     </div>
   );
 
+  if (loading)
+    return (
+      <div className="dashboard loading">
+        <Header nombreUsuario={userName} onLogout={onLogout} />
+        <main className="dashboard-content">
+          <Loader className="spinner" size={40} color="#3B82F6" />
+          <p>Cargando información del Dashboard...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+
   return (
     <>
       <Header nombreUsuario={userName} onLogout={onLogout} />
       <div className="dashboard">
-        <h2>
-          <LayoutDashboard
-            size={32}
-            style={{ verticalAlign: "middle", marginRight: "10px" }}
-          />{" "}
-          Dashboard de Obras DPV
-        </h2>
+        <div className="dashboard-header-row">
+          <h2>
+            <LayoutDashboard
+              size={32}
+              style={{ verticalAlign: "middle", marginRight: "10px" }}
+            />
+            Dashboard de Obras DPV
+          </h2>
+          {/* El botón ha sido eliminado de aquí */}
+        </div>
+
         <main className="dashboard-content">
-          {/* GRÁFICO 1: OBRAS EN EJECUCIÓN (usando ChartCard) */}
           <ChartCard
             title="Obras en Ejecución por Zona"
             total={totalEjecucion}
-            data={dataEjecucion}
+            data={{
+              labels: porZonaEjecucion.map((z) => z.zona),
+              datasets: [
+                {
+                  data: porZonaEjecucion.map((z) => z.cantidad),
+                  backgroundColor: chartColors.slice(
+                    0,
+                    porZonaEjecucion.length
+                  ),
+                  borderWidth: 0,
+                },
+              ],
+            }}
           />
 
-          {/* GRÁFICO 2: OBRAS FINALIZADAS (usando ChartCard) */}
           <ChartCard
             title="Obras Finalizadas por Zona"
             total={totalFinalizadas}
-            data={dataFinalizadas}
+            data={{
+              labels: porZonaFinalizadas.map((z) => z.zona),
+              datasets: [
+                {
+                  data: porZonaFinalizadas.map((z) => z.cantidad),
+                  backgroundColor: chartColors.slice(
+                    0,
+                    porZonaFinalizadas.length
+                  ),
+                  borderWidth: 0,
+                },
+              ],
+            }}
           />
         </main>
       </div>

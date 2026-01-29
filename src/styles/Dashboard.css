@@ -14,6 +14,7 @@
     margin-bottom: 30px;
 }
 
+
 .dashboard-content {
     display: flex;
     gap: 30px; /* Espacio entre las tarjetas */
@@ -61,21 +62,25 @@
 .chart-container {
     position: relative;
     width: 100%;
-    max-width: 300px; /* Tamaño fijo del gráfico */
-    height: 300px; /* Altura fija del gráfico */
+    max-width: 300px;
+    height: 350px; /* Aumenta un poco la altura para dar espacio a la leyenda */
     margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Estilo del texto central dentro del Doughnut */
 .chart-center {
     position: absolute;
-    top: 50%;
+    /* Cambiamos el cálculo para que ignore el desfase de la leyenda */
+    top: 42%; /* Ajusta este valor (entre 40% y 45%) hasta que lo veas perfecto */
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 3rem; /* Tamaño grande para el total */
+    font-size: 3rem;
     font-weight: 700;
     color: #333;
-    line-height: 1;
+    pointer-events: none; /* Para que no interfiera con los tooltips del gráfico */
 }
 
 /* Mensajes de vacío */
@@ -86,10 +91,75 @@
     color: #777;
     margin-top: 20px;
 }
+.dashboard-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.5); /* Fondo sutil para resaltar la fila */
+  border-radius: 12px;
+}
 
-/* Media Query para pantallas más pequeñas */
+.btn-instructivo {
+  display: inline-flex;
+  align-items: center;
+  /* Color Naranja Vial llamativo */
+  background: linear-gradient(135deg, #0091ff 0%, #1900ff 100%);
+  color: white;
+  padding: 14px 28px; /* Más grande */
+  border: none;
+  border-radius: 40px; /* Bordes redondeados tipo cápsula */
+  font-weight: 900px;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(255, 145, 0, 0.4);
+  transition: transform 0.2s ease;
+  position: relative;
+  height: 80px;
+}
+.btn-instructivo span{
+    font-weight: 100;
+}
+
+/* Animación de Pulso */
+.btn-pulse {
+  animation: pulse-animation 2s infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(245, 158, 11, 0);
+  }
+}
+
+.btn-instructivo:hover {
+  transform: scale(1.05); /* Se agranda un poco al pasar el mouse */
+  background: linear-gradient(135deg, #05009b 0%, #000f94 100%);
+}
+
+.btn-instructivo span {
+  text-transform: uppercase;
+}
+/* Responsivo: Si la pantalla es muy chica, se apilan */
 @media (max-width: 768px) {
-    .dashboard-content {
+  .dashboard-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .btn-instructivo {
+    width: 100%; /* El botón ocupa todo el ancho en móviles */
+  }
+   .dashboard-content {
         flex-direction: column;
         align-items: center;
     }

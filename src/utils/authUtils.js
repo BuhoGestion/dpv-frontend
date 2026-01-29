@@ -15,7 +15,7 @@ const parseJwt = (token) => {
 };
 
 export const getUserPermissions = () => {
-    const token = localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("authToken");
     if (!token) return [];
 
     const payload = parseJwt(token);

@@ -4,7 +4,7 @@ import { usePermissions } from "../utils/authUtils";
 import Swal from "sweetalert2";
 
 const PermissionRoute = ({ children, requiredPermissions = [] }) => {
-  const isAuthenticated = localStorage.getItem("authToken");
+  const isAuthenticated = sessionStorage.getItem("authToken");
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;

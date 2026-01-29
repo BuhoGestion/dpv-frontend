@@ -11,11 +11,11 @@ import PermissionRoute from "./pages/PermissionRoute";
 function App() {
   const [userName, setUserName] = useState("");
   const [authKey, setAuthKey] = useState(0);
-  const isAuthenticated = !!localStorage.getItem("authToken");
-  // FUNCIÓN CLAVE: Para actualizar el nombre de usuario (Header/localStorage)
+  const isAuthenticated = !!sessionStorage.getItem("authToken");
+  // FUNCIÓN CLAVE: Para actualizar el nombre de usuario (Header/sessionStorage)
   const handleUserNameUpdate = (newUserName) => {
-    // 1. Actualiza localStorage
-    localStorage.setItem("userName", newUserName);
+    // 1. Actualiza sessionStorage
+    sessionStorage.setItem("userName", newUserName);
     // 2. Actualiza el estado de React que alimenta el Header
     setUserName(newUserName);
   }; //Función para manejar el logout (Mantenida)
@@ -34,8 +34,8 @@ function App() {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("userName");
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userName");
         setUserName("");
         setAuthKey((prev) => prev + 1);
         window.location.href = "/";
@@ -43,7 +43,7 @@ function App() {
     });
   };
   useEffect(() => {
-    const currentUserName = localStorage.getItem("userName");
+    const currentUserName = sessionStorage.getItem("userName");
     setUserName(currentUserName || "");
     if (currentUserName && !isAuthenticated) {
       setAuthKey((prev) => prev + 1);

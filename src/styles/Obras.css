@@ -84,7 +84,48 @@
     background-color: #1e40af;
     transform: translateY(-2px);
 }
+/*-------EXPORTAR----------*/
+.acciones-principales-container {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Espacio entre los dos botones */
+  margin-bottom: 20px;
+}
 
+.btn-exportar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Verde Excel profesional */
+  background: linear-gradient(135deg, #1D743F 0%, #107C41 100%);
+  color: white;
+  padding: 0 25px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  height: 42px; /* Alineado con el height de 'Nueva Obra' */
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(16, 124, 65, 0.2);
+  text-transform: uppercase;
+}
+
+.btn-exportar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(16, 124, 65, 0.4);
+  filter: brightness(1.1);
+}
+
+.btn-exportar:active {
+  transform: translateY(0);
+}
+
+/* Ajuste para que el botón Nueva Obra no se vea diferente */
+.btn-nueva-obra {
+  margin-bottom: 0 !important; /* Quita márgenes que puedan desalinear */
+  height: 42px;
+}
 /* ==== FILTROS ==== */
 .filtros {
     display: flex;
@@ -152,6 +193,92 @@
 
 .tabla-container table {
     min-width: 1400px;
+}
+
+/* Contenedor principal de la paginación */
+.paginacion-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alineado a la izquierda como en tu foto */
+    gap: 25px;
+    padding: 10px 20px;
+    background: linear-gradient(to bottom, #ffffff, #f1f3f5); /* Degradado sutil */
+    border: 1px solid #d1d5db;
+    border-top: none; /* Se une a la tabla */
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Sección de "Página X de Y" */
+.paginacion-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-pagina {
+    width: 45px;
+    height: 30px;
+    text-align: center;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Botones de navegación < y > */
+.paginacion-botones {
+    display: flex;
+    gap: 2px;
+}
+
+.btn-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 50%; /* Botones circulares como en la imagen */
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #4b5563;
+    font-weight: bold;
+}
+
+.btn-nav:hover:not(:disabled) {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Selector de filas */
+.paginacion-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.select-filas {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    outline: none;
+}
+
+.select-filas:focus {
+    border-color: #4dabf7;
+}
+
+.texto-filas {
+    color: #6b7280;
 }
 
 /* ==== TABLA ==== */

@@ -43,8 +43,8 @@ export default function Login({ setAuthKey }) {
 
       if (response.ok) {
         // Login Exitoso: Guardar datos y navegar
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("userName", data.userName);
+        sessionStorage.setItem("authToken", data.token);
+        sessionStorage.setItem("userName", data.userName);
 
         // Forzar la actualización del contexto/router
         if (setAuthKey) {

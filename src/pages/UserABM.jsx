@@ -94,9 +94,9 @@ const UserModal = ({ userToEdit, onClose, onSave }) => {
       if (form.password !== form.confirmPassword) {
         Swal.fire("Error", "Las contraseñas no coinciden.", "error");
         return;
-      } // CAMBIO CRÍTICO: Usar 'password' en CamelCase
+      } // CAMBIO Usar 'password' en CamelCase dm
       dataToSave.password = form.password;
-    } // Lógica de EDICIÓN: La contraseña es opcional, pero si se ingresa, se valida.
+    } //
     else if (isEditing) {
       if (form.password) {
         if (form.password.length < 4) {
@@ -183,31 +183,31 @@ const UserModal = ({ userToEdit, onClose, onSave }) => {
             )}
           </select>
           {/*CAMPOS DE CONTRASEÑA SOLO PARA EDICIÓN */}
-          <>
-                                   
-            <label>
-              Contraseña {isEditing ? "(dejar vacío para no cambiar)" : "*"}:
-            </label>
-                                   
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required={!isEditing}
-            />
-                                                           
-            <label>
-              Confirmar Contraseña {isEditing ? "(si se ingresó nueva)" : "*"}:
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required={!isEditing}
-            />
-          </>
+          {!isEditing && (
+            <>
+                                     
+              <label>
+                Contraseña {isEditing ? "(dejar vacío para no cambiar)" : "*"}:
+              </label>
+                                     
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                required={!isEditing}
+              />
+                                                             
+              <label>Confirmar Contraseña *:</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required={!isEditing}
+              />
+            </>
+          )}
           <div className="form-buttons">
             <button type="submit" className="btn-primary">
               {isEditing ? "Guardar Cambios" : "Crear Usuario y Enviar Email"}
@@ -257,7 +257,7 @@ function UserABM({ userName, onLogout }) {
     fetchUsers();
   }, [filtroZonaId]); // Dependencia del filtro
 
-  const getToken = () => localStorage.getItem("authToken");
+  const getToken = () => sessionStorage.getItem("authToken");
 
   // --- Cargar Usuarios ---
   const fetchUsers = async () => {
